@@ -1,3 +1,7 @@
+
+# load data ---------------------------------------------------------------
+
+
 rm(list = ls())
 
 library(tidyverse)
@@ -66,6 +70,8 @@ for (sel_cat in categories) {
     rowwise() %>%
     dplyr::mutate(img_data = list(jpeg::readJPEG(pth))) %>%
     ungroup()
+
+# save image --------------------------------------------------------------
 
   library(imager)
 
