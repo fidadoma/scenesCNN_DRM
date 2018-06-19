@@ -5,7 +5,7 @@ library(tidyverse)
 # load m and im_names objects
 load(here::here("data","m_figrim_l2.RData"))
 
-load(here::here("data","/file_info.RData"))
+load(here::here("data","file_info.RData"))
 
 f_files <-  data_frame(filename = im_names) %>% left_join(df_files, by = c("filename"))
 
