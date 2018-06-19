@@ -38,7 +38,7 @@ for (i in 1:nrow(categories)) {
   
   mds_onecat <- cmdscale(m_onecat)
   mds_onecat <- data_frame(V1 = mds_onecat[,1], V2 = mds_onecat[,2], col = as.factor(cv$clustering))
-  png(here::here("plots", sprintf("%s_mds.png", sel_category)))
+  
   p <- ggplot(mds_onecat, aes( x = V1, y = V2, col = col)) + 
     geom_point() +
     ggtitle(sprintf("%s (n=%d)", sel_category, nrow(mds_onecat))) +
