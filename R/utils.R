@@ -15,3 +15,7 @@ select_points_close_to_center <- function(df, cent, n_points = 9) {
 select_points_close_to_centerL2 <- function(df, cent, n_points = 9) {
   cbind(df, d=l2norm(df %>% select(-id), cent)) %>%  top_n(n_points, -d)
 }
+
+select_points_farthest_from_centerL2 <- function(df, cent, n_points = 1) {
+  cbind(df, d=l2norm(df %>% select(-id), cent)) %>%  top_n(n_points, d)
+}

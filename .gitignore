@@ -38,3 +38,6 @@ rsconnect/
 
 # data are stored only locally
 data
+
+# no plots
+plots

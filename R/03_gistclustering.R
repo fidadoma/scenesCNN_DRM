@@ -1,36 +1,60 @@
+# this script compute MDS and kmeans for all data
+
 rm(list = ls())
+
+# prepare data ------------------------------------------------------------
+
+should_mds <- F
 
 library(tidyverse)
 
-source("utils.R")
+source(here::here("R","utils.R"))
 
 sel_cat <- "mountain"
 
 gist <- read_csv(here::here("data", "gist_figrim_all.csv"), col_names = F)
 load(here::here("data","file_info.RData"))
 
+df_files <- df_files %>%  mutate(id = 1:n())
 gist$id <- 1:nrow(gist)
+
+
+# kmeans and mds ----------------------------------------------------------
+
 km1 <- kmeans(gist %>% select(-id) ,2)
 cls <- km1$cluster
 
-mds_gist_all <- cmdscale(dist(gist %>% select(-id)), eig = T)
-mds_gist <- mds_gist_all$points
-colnames(mds_gist) <- c("x","y")
+if(should_mds) {
+
+  mds_gist_all <- cmdscale(dist(gist %>% select(-id)), eig = T)
+  mds_gist <- mds_gist_all$points
+  colnames(mds_gist) <- c("x","y")
+  
+  save(mds_gist, file = here::here("data", "mds_gist_all_180620.RData"))
+  
+} else {
+  load(here::here("data", "mds_gist_all_180620.RData"))
+}
 
 mds_gist <- as_data_frame(mds_gist) %>%
   mutate(cluster = cls, id = 1:n())
+
+cl2 <- select_points_close_to_centerL2(gist, km1$centers[1,]) %>% left_join(mds_gist, by = "id")
+cl3 <- select_points_close_to_centerL2(gist, km1$centers[2,]) %>% left_join(mds_gist, by = "id")
+
+df_for_plot <- rbind(cl2[-1,],cl3[1,]) %>% left_join(df_files, by = "id")
+
+df_for_plot <- df_for_plot %>% 
+  rowwise() %>% 
+  dplyr::mutate(img_data = list(jpeg::readJPEG(pth))) %>%
+  ungroup()
+
+# plotting ----------------------------------------------------------------
 
 mds_gist %>% 
   ggplot(aes(x, y, col = as.factor(cluster))) +
   geom_point() +
   theme(aspect.ratio = 1)
-
-
-
-
-cl2 <- select_points_close_to_centerL2(gist, km1$centers[1,], n_points = 4) %>% left_join(mds_gist, by = "id")
-cl3 <- select_points_close_to_centerL2(gist, km1$centers[2,], n_points = 4) %>% left_join(mds_gist, by = "id")
-
 
 mds_gist %>% 
   ggplot(aes(x, y, col = as.factor(cluster))) + 
@@ -41,16 +65,9 @@ mds_gist %>%
   geom_point(data = cl2, shape = 17, alpha = 1, size = 4) + 
   geom_point(data = cl3[1,], shape = 17, alpha = 1, size = 4)
 
-file_info <- file_info %>% 
-  mutate(id = 1:n())
 
-df_for_plot <- rbind(cl2[-1,],cl3[1,]) %>% left_join(file_info, by = "id")
 
-df_for_plot <- df_for_plot %>% 
-  rowwise() %>% 
-  dplyr::mutate(img_data = list(jpeg::readJPEG(pth))) %>%
-  ungroup()
-
+# visualize and store stimuli ---------------------------------------------
 
 library(imager)
 
