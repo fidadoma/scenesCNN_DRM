@@ -16,43 +16,59 @@ if(!dir.exists(outdir)) {
   dir.create(outdir)
 }
 
+load(here::here("data","konkle_180621.RData"))
 
-gist <- read_csv(here::here("data", "gist_figrim_all.csv"), col_names = F)
-load(here::here("data", "file_info.RData"))
+n <- 64
 
-df_files <- df_files %>% dplyr::mutate(id = 1:n())
-gist$id <- 1:nrow(gist)
-
-n <- 100
 n_points <- 9 # how many images will be there in grid
 
-df_files_sample <- df_files %>% sample_n(n)
+# selected_images <- image_info %>% sample_n(n)
+categories <- sample(image_info$category %>% unique())
 
-p <- create_empty_protocol(1)
 
 
-for (i in 1:n) {
-  
-  r <- df_files_sample[i,]
-  
-  this_cat_ix <- df_files$category == r$category
-  
-  # close to center ----------------------------------------------------------
-  
-  gist_point <- gist[r$id, ] %>% select(-id) %>% as.matrix()
-  
-  gr_close <- select_points_close_to_centerL2(gist[this_cat_ix,], gist_point, n_points = n_points)
-  gr_far <- select_points_farthest_from_centerL2(gist[this_cat_ix,], gist_point, n_points = n_points)
-  
-  # replace the most distant point in close points with the most distant one
-  df_for_plot <- rbind(gr_close[-n_points, ], gr_far[1, ]) %>% 
-    left_join(df_files, by = "id")
+variants <- expand.grid(2:4,2:4,2:4) %>% filter(Var1 != Var2, Var2 != Var3, Var1 != Var3)
+nvar <- nrow(variants)
+tm <- create.time.measure(n*nvar)
 
-  # we can't use those images for next trials
-  keep_ix <- !(df_files$id %in% df_for_plot$id)
-  df_files <- df_files[keep_ix,]
-  gist <- gist[keep_ix,]
+for(j in 1:nvar) {
+  v <- variants[j,]
+  p <- create_empty_protocol(1L) %>%
+    alter_protocol(v)
   
- 
+  # randomize order of the categories
+  categories <- sample(categories)
+  
+  for (i in 1:n) {
+    categ <- categories[i]
+    
+    this_cat_ix <- image_info$category == categ
+    
+    r <- image_info[this_cat_ix,] %>% sample_n(1)  
+    
+    this_ix <- image_info$new == r$new
+    # close to center ----------------------------------------------------------
+    
+    fc7_thiscat <- fc7[this_cat_ix,this_cat_ix]
+    fc7_point <- fc7_thiscat[this_ix[this_cat_ix], ]
+    qs <- compute_quintiles(fc7_point)
+    gr_close <- select_closest_points(fc7_point, n_points - 1)
+    gr_close_names <- names(gr_close)
+    
+    gr_far <- select_random_point_from_quintile(fc7_point, p$quintile[i], qs)
+    gr_far_name <- names(gr_far)
+    
+    # replace the most distant point in close points with the most distant one
+    p[[paste0("im",p$target_position[i])]][i] <- gr_far_name
+    p[paste0("im",setdiff(1:9,p$target_position[i]))][i,] <- gr_close_names
+    p$category[i] <- categ
+    
+    # we can't use those images for next trials
+    keep_ix <- !(image_info$new %in% c(gr_close_names, gr_far_name))
+    image_info <- image_info[keep_ix,]
+    fc7 <- fc7[keep_ix,]
+    tm <- update(tm)
+    print(tm)
+  }
+  write_csv(p, file.path(outdir, sprintf("P%03d.csv",j)))
 }
-
