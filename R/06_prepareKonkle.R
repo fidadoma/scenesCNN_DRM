@@ -30,20 +30,31 @@ categories <- rbind(category_64, category_68)
 
 image_info <- image_names %>% 
   filter(!new %in% removed_images) %>%
-  mutate(category = stringr::str_replace(new, "^(.*)_[:digit:]*\\.jpg$","\\1")) %>% 
-  left_join(categories, by = "category")
+  mutate(category = stringr::str_replace(new, "^(.*)_[:digit:]*\\.jpg$","\\1"),
+         new = stringr::str_replace(new, "-","_")) %>% 
+  left_join(categories, by = "category") %>%
+  arrange(new)
 
 
 # clean fc7 data ----------------------------------------------------------
+
+colnames(fc7) <- stringr::str_replace(colnames(fc7), "\\.","_") %>% 
+  stringr::str_replace("_jpg",".jpg")
+rownames(fc7) <- stringr::str_replace(rownames(fc7), "\\.","_") %>% 
+  stringr::str_replace("_jpg",".jpg")
+
 
 fc7_names <- colnames(fc7)
 
 fc7 <- fc7[fc7_names != "zzz_1.jpg",fc7_names != "zzz_1.jpg"]
 
+fc7 <- fc7[order(colnames(fc7)),order(colnames(fc7))]
+
 fc7_names <- colnames(fc7)
 
-fc7 <- as.matrix(fc7)
+stopifnot(all(fc7_names == image_info$new))
 
+fc7 <- as.matrix(fc7)
 
 # save data ---------------------------------------------------------------
 
