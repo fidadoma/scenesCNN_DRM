@@ -30,7 +30,7 @@ categories <- rbind(category_64, category_68)
 
 image_info <- image_names %>% 
   filter(!new %in% removed_images) %>%
-  mutate(category = str_replace(new, "^(.*)_[:digit:]*\\.jpg$","\\1")) %>% 
+  mutate(category = stringr::str_replace(new, "^(.*)_[:digit:]*\\.jpg$","\\1")) %>% 
   left_join(categories, by = "category")
 
 
