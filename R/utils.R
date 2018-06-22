@@ -32,6 +32,7 @@ create_empty_protocol <- function(prot_id, n_images = 9, n_categories = 64, n_qu
                   trial_id = 1:n_trials, 
                   category = "",
                   target_position = sample(n_images,n_trials,replace=T),
+                  selected_image = "",
                   quintile = rep(2:4, length.out = n_trials)) %>% 
     cbind(new_cols) %>% 
     as_data_frame()
