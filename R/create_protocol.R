@@ -6,7 +6,6 @@ set.seed(180620)
 
 library(tidyverse)
 library(FDhelpers)
-library(imager)
 
 source(here::here("R", "utils.R"))
 
@@ -33,7 +32,7 @@ tm <- create.time.measure(n*nvar)
 
 for(j in 1:nvar) {
   v <- variants[j,]
-  p <- create_empty_protocol(1L) %>%
+  p <- create_empty_protocol(j) %>%
     alter_protocol(v)
   
   # randomize order of the categories
@@ -50,7 +49,7 @@ for(j in 1:nvar) {
     # close to center ----------------------------------------------------------
     
     fc7_thiscat <- fc7[this_cat_ix,this_cat_ix]
-    fc7_point <- fc7_thiscat[this_ix[this_cat_ix], ]
+    fc7_point <- fc7[this_ix, this_cat_ix]
     qs <- compute_quintiles(fc7_point)
     gr_close <- select_closest_points(fc7_point, n_points - 1)
     gr_close_names <- names(gr_close)
@@ -62,11 +61,11 @@ for(j in 1:nvar) {
     p[[paste0("im",p$target_position[i])]][i] <- gr_far_name
     p[paste0("im",setdiff(1:9,p$target_position[i]))][i,] <- gr_close_names
     p$category[i] <- categ
-    
+    p$selected_image[i] <- r$new
     # we can't use those images for next trials
     keep_ix <- !(image_info$new %in% c(gr_close_names, gr_far_name))
     image_info <- image_info[keep_ix,]
-    fc7 <- fc7[keep_ix,]
+    fc7 <- fc7[keep_ix,keep_ix]
     tm <- update(tm)
     print(tm)
   }
