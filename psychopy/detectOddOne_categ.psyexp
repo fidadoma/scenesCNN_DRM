@@ -4,13 +4,13 @@
     <Param name="Monitor" updates="None" val="testMonitor" valType="str"/>
     <Param name="color" updates="None" val="$[0,0,0]" valType="str"/>
     <Param name="colorSpace" updates="None" val="rgb" valType="str"/>
-    <Param name="Experiment info" updates="None" val="{u'subject_id': u'', u'protocol_id': u''}" valType="code"/>
+    <Param name="Experiment info" updates="None" val="{u'subject_id': u'999', u'exptype': u'categ', u'protocol_id': u'1'}" valType="code"/>
     <Param name="JS libs" updates="None" val="packaged" valType="str"/>
     <Param name="Units" updates="None" val="use prefs" valType="str"/>
     <Param name="Save excel file" updates="None" val="False" valType="bool"/>
     <Param name="Enable Escape" updates="None" val="True" valType="bool"/>
     <Param name="Save psydat file" updates="None" val="True" valType="bool"/>
-    <Param name="Window size (pixels)" updates="None" val="[1920, 1200]" valType="code"/>
+    <Param name="Window size (pixels)" updates="None" val="[1920, 1080]" valType="code"/>
     <Param name="Full-screen window" updates="None" val="True" valType="bool"/>
     <Param name="blendMode" updates="None" val="avg" valType="str"/>
     <Param name="Use version" updates="None" val="" valType="str"/>
@@ -37,7 +37,7 @@
         <Param name="stopVal" updates="constant" val="" valType="code"/>
         <Param name="durationEstim" updates="None" val="" valType="code"/>
         <Param name="mask" updates="constant" val="None" valType="str"/>
-        <Param name="pos" updates="constant" val="(-414, 414)" valType="code"/>
+        <Param name="pos" updates="constant" val="(-286, 286)" valType="code"/>
         <Param name="interpolate" updates="constant" val="linear" valType="str"/>
         <Param name="startEstim" updates="None" val="" valType="code"/>
         <Param name="units" updates="None" val="pix" valType="str"/>
@@ -59,7 +59,7 @@
         <Param name="stopVal" updates="constant" val="" valType="code"/>
         <Param name="durationEstim" updates="None" val="" valType="code"/>
         <Param name="mask" updates="constant" val="None" valType="str"/>
-        <Param name="pos" updates="constant" val="(-128, 414)" valType="code"/>
+        <Param name="pos" updates="constant" val="(0, 286)" valType="code"/>
         <Param name="interpolate" updates="constant" val="linear" valType="str"/>
         <Param name="startEstim" updates="None" val="" valType="code"/>
         <Param name="units" updates="None" val="pix" valType="str"/>
@@ -81,7 +81,7 @@
         <Param name="stopVal" updates="constant" val="" valType="code"/>
         <Param name="durationEstim" updates="None" val="" valType="code"/>
         <Param name="mask" updates="constant" val="None" valType="str"/>
-        <Param name="pos" updates="constant" val="(158, 414)" valType="code"/>
+        <Param name="pos" updates="constant" val="(286, 286)" valType="code"/>
         <Param name="interpolate" updates="constant" val="linear" valType="str"/>
         <Param name="startEstim" updates="None" val="" valType="code"/>
         <Param name="units" updates="None" val="pix" valType="str"/>
@@ -94,22 +94,6 @@
         <Param name="image" updates="set every repeat" val="$&quot;stimuli/&quot;+im3" valType="str"/>
         <Param name="size" updates="constant" val="(256, 256)" valType="code"/>
       </ImageComponent>
-      <KeyboardComponent name="key_resp_4">
-        <Param name="correctAns" updates="constant" val="" valType="str"/>
-        <Param name="storeCorrect" updates="constant" val="False" valType="bool"/>
-        <Param name="name" updates="None" val="key_resp_4" valType="code"/>
-        <Param name="stopVal" updates="constant" val="" valType="code"/>
-        <Param name="durationEstim" updates="None" val="" valType="code"/>
-        <Param name="forceEndRoutine" updates="constant" val="True" valType="bool"/>
-        <Param name="startEstim" updates="None" val="" valType="code"/>
-        <Param name="discard previous" updates="constant" val="True" valType="bool"/>
-        <Param name="startType" updates="None" val="time (s)" valType="str"/>
-        <Param name="allowedKeys" updates="constant" val="'num_1','num_2','num_3','num_4','num_5','num_6','num_7','num_8','num_9'" valType="code"/>
-        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
-        <Param name="startVal" updates="None" val="0.0" valType="code"/>
-        <Param name="store" updates="constant" val="last key" valType="str"/>
-        <Param name="syncScreenRefresh" updates="constant" val="True" valType="bool"/>
-      </KeyboardComponent>
       <ImageComponent name="image4">
         <Param name="opacity" updates="constant" val="1" valType="code"/>
         <Param name="flipVert" updates="constant" val="False" valType="bool"/>
@@ -119,7 +103,7 @@
         <Param name="stopVal" updates="constant" val="" valType="code"/>
         <Param name="durationEstim" updates="None" val="" valType="code"/>
         <Param name="mask" updates="constant" val="None" valType="str"/>
-        <Param name="pos" updates="constant" val="(-414, 128)" valType="code"/>
+        <Param name="pos" updates="constant" val="(-286, 0)" valType="code"/>
         <Param name="interpolate" updates="constant" val="linear" valType="str"/>
         <Param name="startEstim" updates="None" val="" valType="code"/>
         <Param name="units" updates="None" val="pix" valType="str"/>
@@ -141,7 +125,7 @@
         <Param name="stopVal" updates="constant" val="" valType="code"/>
         <Param name="durationEstim" updates="None" val="" valType="code"/>
         <Param name="mask" updates="constant" val="None" valType="str"/>
-        <Param name="pos" updates="constant" val="(-128, 128)" valType="code"/>
+        <Param name="pos" updates="constant" val="(0, -0)" valType="code"/>
         <Param name="interpolate" updates="constant" val="linear" valType="str"/>
         <Param name="startEstim" updates="None" val="" valType="code"/>
         <Param name="units" updates="None" val="pix" valType="str"/>
@@ -154,6 +138,109 @@
         <Param name="image" updates="set every repeat" val="$&quot;stimuli/&quot;+im5" valType="str"/>
         <Param name="size" updates="constant" val="(256, 256)" valType="code"/>
       </ImageComponent>
+      <ImageComponent name="image6">
+        <Param name="opacity" updates="constant" val="1" valType="code"/>
+        <Param name="flipVert" updates="constant" val="False" valType="bool"/>
+        <Param name="colorSpace" updates="constant" val="rgb" valType="str"/>
+        <Param name="name" updates="None" val="image6" valType="code"/>
+        <Param name="color" updates="constant" val="$[1,1,1]" valType="str"/>
+        <Param name="stopVal" updates="constant" val="" valType="code"/>
+        <Param name="durationEstim" updates="None" val="" valType="code"/>
+        <Param name="mask" updates="constant" val="None" valType="str"/>
+        <Param name="pos" updates="constant" val="(286, 0)" valType="code"/>
+        <Param name="interpolate" updates="constant" val="linear" valType="str"/>
+        <Param name="startEstim" updates="None" val="" valType="code"/>
+        <Param name="units" updates="None" val="pix" valType="str"/>
+        <Param name="texture resolution" updates="constant" val="128" valType="code"/>
+        <Param name="startType" updates="None" val="time (s)" valType="str"/>
+        <Param name="ori" updates="constant" val="0" valType="code"/>
+        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
+        <Param name="startVal" updates="None" val="0.0" valType="code"/>
+        <Param name="flipHoriz" updates="constant" val="False" valType="bool"/>
+        <Param name="image" updates="set every repeat" val="$&quot;stimuli/&quot;+im6" valType="str"/>
+        <Param name="size" updates="constant" val="(256, 256)" valType="code"/>
+      </ImageComponent>
+      <ImageComponent name="image7">
+        <Param name="opacity" updates="constant" val="1" valType="code"/>
+        <Param name="flipVert" updates="constant" val="False" valType="bool"/>
+        <Param name="colorSpace" updates="constant" val="rgb" valType="str"/>
+        <Param name="name" updates="None" val="image7" valType="code"/>
+        <Param name="color" updates="constant" val="$[1,1,1]" valType="str"/>
+        <Param name="stopVal" updates="constant" val="" valType="code"/>
+        <Param name="durationEstim" updates="None" val="" valType="code"/>
+        <Param name="mask" updates="constant" val="None" valType="str"/>
+        <Param name="pos" updates="constant" val="(-286, -286)" valType="code"/>
+        <Param name="interpolate" updates="constant" val="linear" valType="str"/>
+        <Param name="startEstim" updates="None" val="" valType="code"/>
+        <Param name="units" updates="None" val="pix" valType="str"/>
+        <Param name="texture resolution" updates="constant" val="128" valType="code"/>
+        <Param name="startType" updates="None" val="time (s)" valType="str"/>
+        <Param name="ori" updates="constant" val="0" valType="code"/>
+        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
+        <Param name="startVal" updates="None" val="0.0" valType="code"/>
+        <Param name="flipHoriz" updates="constant" val="False" valType="bool"/>
+        <Param name="image" updates="set every repeat" val="$&quot;stimuli/&quot;+im7" valType="str"/>
+        <Param name="size" updates="constant" val="(256, 256)" valType="code"/>
+      </ImageComponent>
+      <ImageComponent name="image8">
+        <Param name="opacity" updates="constant" val="1" valType="code"/>
+        <Param name="flipVert" updates="constant" val="False" valType="bool"/>
+        <Param name="colorSpace" updates="constant" val="rgb" valType="str"/>
+        <Param name="name" updates="None" val="image8" valType="code"/>
+        <Param name="color" updates="constant" val="$[1,1,1]" valType="str"/>
+        <Param name="stopVal" updates="constant" val="" valType="code"/>
+        <Param name="durationEstim" updates="None" val="" valType="code"/>
+        <Param name="mask" updates="constant" val="None" valType="str"/>
+        <Param name="pos" updates="constant" val="(0, -286)" valType="code"/>
+        <Param name="interpolate" updates="constant" val="linear" valType="str"/>
+        <Param name="startEstim" updates="None" val="" valType="code"/>
+        <Param name="units" updates="None" val="pix" valType="str"/>
+        <Param name="texture resolution" updates="constant" val="128" valType="code"/>
+        <Param name="startType" updates="None" val="time (s)" valType="str"/>
+        <Param name="ori" updates="constant" val="0" valType="code"/>
+        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
+        <Param name="startVal" updates="None" val="0.0" valType="code"/>
+        <Param name="flipHoriz" updates="constant" val="False" valType="bool"/>
+        <Param name="image" updates="set every frame" val="$&quot;stimuli/&quot;+im8" valType="str"/>
+        <Param name="size" updates="constant" val="(256, 256)" valType="code"/>
+      </ImageComponent>
+      <ImageComponent name="image9">
+        <Param name="opacity" updates="constant" val="1" valType="code"/>
+        <Param name="flipVert" updates="constant" val="False" valType="bool"/>
+        <Param name="colorSpace" updates="constant" val="rgb" valType="str"/>
+        <Param name="name" updates="None" val="image9" valType="code"/>
+        <Param name="color" updates="constant" val="$[1,1,1]" valType="str"/>
+        <Param name="stopVal" updates="constant" val="" valType="code"/>
+        <Param name="durationEstim" updates="None" val="" valType="code"/>
+        <Param name="mask" updates="constant" val="None" valType="str"/>
+        <Param name="pos" updates="constant" val="(286, -286)" valType="code"/>
+        <Param name="interpolate" updates="constant" val="linear" valType="str"/>
+        <Param name="startEstim" updates="None" val="" valType="code"/>
+        <Param name="units" updates="None" val="pix" valType="str"/>
+        <Param name="texture resolution" updates="constant" val="128" valType="code"/>
+        <Param name="startType" updates="None" val="time (s)" valType="str"/>
+        <Param name="ori" updates="constant" val="0" valType="code"/>
+        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
+        <Param name="startVal" updates="None" val="0.0" valType="code"/>
+        <Param name="flipHoriz" updates="constant" val="False" valType="bool"/>
+        <Param name="image" updates="set every repeat" val="$&quot;stimuli/&quot;+im9" valType="str"/>
+        <Param name="size" updates="constant" val="(256, 256)" valType="code"/>
+      </ImageComponent>
+      <MouseComponent name="mouse">
+        <Param name="name" updates="None" val="mouse" valType="code"/>
+        <Param name="timeRelativeTo" updates="constant" val="routine" valType="str"/>
+        <Param name="stopVal" updates="constant" val="" valType="code"/>
+        <Param name="durationEstim" updates="None" val="" valType="code"/>
+        <Param name="forceEndRoutineOnPress" updates="constant" val="valid click" valType="str"/>
+        <Param name="newClicksOnly" updates="constant" val="True" valType="bool"/>
+        <Param name="startEstim" updates="None" val="" valType="code"/>
+        <Param name="startType" updates="None" val="time (s)" valType="str"/>
+        <Param name="clickable" updates="constant" val="image1,image2,image3,image4,image5,image6,image7,image8,image9" valType="code"/>
+        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
+        <Param name="startVal" updates="None" val="0.0" valType="code"/>
+        <Param name="saveParamsClickable" updates="constant" val="name," valType="code"/>
+        <Param name="saveMouseState" updates="None" val="final" valType="str"/>
+      </MouseComponent>
     </Routine>
     <Routine name="welcome">
       <TextComponent name="text">
@@ -193,6 +280,28 @@
         <Param name="syncScreenRefresh" updates="constant" val="True" valType="bool"/>
       </KeyboardComponent>
     </Routine>
+    <Routine name="bye">
+      <TextComponent name="text_3">
+        <Param name="opacity" updates="constant" val="1" valType="code"/>
+        <Param name="colorSpace" updates="constant" val="rgb" valType="str"/>
+        <Param name="name" updates="None" val="text_3" valType="code"/>
+        <Param name="wrapWidth" updates="constant" val="" valType="code"/>
+        <Param name="color" updates="constant" val="white" valType="str"/>
+        <Param name="text" updates="constant" val="Děkujeme za účast!" valType="str"/>
+        <Param name="stopVal" updates="constant" val="3" valType="code"/>
+        <Param name="durationEstim" updates="None" val="" valType="code"/>
+        <Param name="pos" updates="constant" val="(0, 0)" valType="code"/>
+        <Param name="flip" updates="constant" val="" valType="str"/>
+        <Param name="startEstim" updates="None" val="" valType="code"/>
+        <Param name="units" updates="None" val="from exp settings" valType="str"/>
+        <Param name="startType" updates="None" val="time (s)" valType="str"/>
+        <Param name="ori" updates="constant" val="0" valType="code"/>
+        <Param name="stopType" updates="None" val="duration (s)" valType="str"/>
+        <Param name="startVal" updates="None" val="0.0" valType="code"/>
+        <Param name="font" updates="constant" val="Arial" valType="str"/>
+        <Param name="letterHeight" updates="constant" val="0.1" valType="code"/>
+      </TextComponent>
+    </Routine>
     <Routine name="instructions">
       <TextComponent name="text_2">
         <Param name="opacity" updates="constant" val="1" valType="code"/>
@@ -200,7 +309,7 @@
         <Param name="name" updates="None" val="text_2" valType="code"/>
         <Param name="wrapWidth" updates="constant" val="" valType="code"/>
         <Param name="color" updates="constant" val="white" valType="str"/>
-        <Param name="text" updates="constant" val="V každé úloze vám ukážeme 9 obrázků. Vaším úkolem bude označit, který z obrázků je podle vás nejvíc vizuálně odlišný od ostatních. Jedná se celkový dojem, nejde o přítomnost lidí, zvířat či dalších objektů.&amp;#10;&amp;#10;&amp;#10;Stiskněte mezerník.." valType="str"/>
+        <Param name="text" updates="constant" val="V každé úloze vám ukážeme 9 obrázků. Vaším úkolem bude myší označit, který z obrázků je podle vás nejvíc vizuálně odlišný od ostatních. Jedná se celkový dojem, nejde o přítomnost lidí, zvířat či dalších objektů.&amp;#10;&amp;#10;&amp;#10;Stiskněte mezerník.." valType="str"/>
         <Param name="stopVal" updates="constant" val="" valType="code"/>
         <Param name="durationEstim" updates="None" val="" valType="code"/>
         <Param name="pos" updates="constant" val="(0, 0)" valType="code"/>
@@ -230,23 +339,32 @@
         <Param name="store" updates="constant" val="nothing" valType="str"/>
         <Param name="syncScreenRefresh" updates="constant" val="True" valType="bool"/>
       </KeyboardComponent>
+      <CodeComponent name="set_protocols">
+        <Param name="Begin Experiment" updates="constant" val="protocolFile=&quot;protocols/P%03d_%s.csv&quot; % (int(expInfo['protocol_id']), expInfo['exptype'])" valType="extendedCode"/>
+        <Param name="name" updates="None" val="set_protocols" valType="code"/>
+        <Param name="Begin Routine" updates="constant" val="" valType="extendedCode"/>
+        <Param name="End Routine" updates="constant" val="" valType="extendedCode"/>
+        <Param name="End Experiment" updates="constant" val="" valType="extendedCode"/>
+        <Param name="Each Frame" updates="constant" val="" valType="extendedCode"/>
+      </CodeComponent>
     </Routine>
   </Routines>
   <Flow>
     <Routine name="welcome"/>
     <Routine name="instructions"/>
     <LoopInitiator loopType="TrialHandler" name="trials">
-      <Param name="conditionsFile" updates="None" val="protocols\P001.csv" valType="str"/>
+      <Param name="conditionsFile" updates="None" val="$protocolFile" valType="str"/>
       <Param name="name" updates="None" val="trials" valType="code"/>
       <Param name="isTrials" updates="None" val="True" valType="bool"/>
       <Param name="random seed" updates="None" val="" valType="code"/>
       <Param name="loopType" updates="None" val="sequential" valType="str"/>
       <Param name="nReps" updates="None" val="1" valType="code"/>
       <Param name="endPoints" updates="None" val="[0, 1]" valType="num"/>
-      <Param name="conditions" updates="None" val="[OrderedDict([('prot_id', 1), ('trial_id', 1), ('category', u'bathroom'), ('target_position', 9), ('selected_image', u'bathroom_2.jpg'), ('quintile', 4), ('im1', u'bathroom_2.jpg'), ('im2', u'bathroom_23.jpg'), ('im3', u'bathroom_59.jpg'), ('im4', u'bathroom_35.jpg'), ('im5', u'bathroom_6.jpg'), ('im6', u'bathroom_30.jpg'), ('im7', u'bathroom_7.jpg'), ('im8', u'bathroom_24.jpg'), ('im9', u'bathroom_28.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 2), ('category', u'kitchen'), ('target_position', 9), ('selected_image', u'kitchen_46.jpg'), ('quintile', 3), ('im1', u'kitchen_46.jpg'), ('im2', u'kitchen_4.jpg'), ('im3', u'kitchen_26.jpg'), ('im4', u'kitchen_21.jpg'), ('im5', u'kitchen_2.jpg'), ('im6', u'kitchen_34.jpg'), ('im7', u'kitchen_53.jpg'), ('im8', u'kitchen_27.jpg'), ('im9', u'kitchen_10.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 3), ('category', u'iceberg'), ('target_position', 4), ('selected_image', u'iceberg_67.jpg'), ('quintile', 2), ('im1', u'iceberg_67.jpg'), ('im2', u'iceberg_13.jpg'), ('im3', u'iceberg_11.jpg'), ('im4', u'iceberg_50.jpg'), ('im5', u'iceberg_14.jpg'), ('im6', u'iceberg_7.jpg'), ('im7', u'iceberg_21.jpg'), ('im8', u'iceberg_2.jpg'), ('im9', u'iceberg_55.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 4), ('category', u'church-inside'), ('target_position', 7), ('selected_image', u'church_inside_1.jpg'), ('quintile', 4), ('im1', u'church_inside_1.jpg'), ('im2', u'church_inside_64.jpg'), ('im3', u'church_inside_40.jpg'), ('im4', u'church_inside_45.jpg'), ('im5', u'church_inside_19.jpg'), ('im6', u'church_inside_5.jpg'), ('im7', u'church_inside_51.jpg'), ('im8', u'church_inside_16.jpg'), ('im9', u'church_inside_41.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 5), ('category', u'lobby'), ('target_position', 3), ('selected_image', u'lobby_5.jpg'), ('quintile', 3), ('im1', u'lobby_5.jpg'), ('im2', u'lobby_22.jpg'), ('im3', u'lobby_56.jpg'), ('im4', u'lobby_62.jpg'), ('im5', u'lobby_31.jpg'), ('im6', u'lobby_64.jpg'), ('im7', u'lobby_23.jpg'), ('im8', u'lobby_35.jpg'), ('im9', u'lobby_43.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 6), ('category', u'tenniscourt'), ('target_position', 5), ('selected_image', u'tenniscourt_65.jpg'), ('quintile', 2), ('im1', u'tenniscourt_65.jpg'), ('im2', u'tenniscourt_50.jpg'), ('im3', u'tenniscourt_18.jpg'), ('im4', u'tenniscourt_4.jpg'), ('im5', u'tenniscourt_56.jpg'), ('im6', u'tenniscourt_30.jpg'), ('im7', u'tenniscourt_46.jpg'), ('im8', u'tenniscourt_34.jpg'), ('im9', u'tenniscourt_42.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 7), ('category', u'empty'), ('target_position', 7), ('selected_image', u'empty_1.jpg'), ('quintile', 4), ('im1', u'empty_1.jpg'), ('im2', u'empty_49.jpg'), ('im3', u'empty_17.jpg'), ('im4', u'empty_25.jpg'), ('im5', u'empty_19.jpg'), ('im6', u'empty_23.jpg'), ('im7', u'empty_51.jpg'), ('im8', u'empty_20.jpg'), ('im9', u'empty_48.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 8), ('category', u'concert_hall'), ('target_position', 6), ('selected_image', u'concert_hall_30.jpg'), ('quintile', 3), ('im1', u'concert_hall_30.jpg'), ('im2', u'concert_hall_13.jpg'), ('im3', u'concert_hall_5.jpg'), ('im4', u'concert_hall_22.jpg'), ('im5', u'concert_hall_33.jpg'), ('im6', u'concert_hall_14.jpg'), ('im7', u'concert_hall_7.jpg'), ('im8', u'concert_hall_61.jpg'), ('im9', u'concert_hall_12.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 9), ('category', u'skyscraper'), ('target_position', 9), ('selected_image', u'skyscraper_4.jpg'), ('quintile', 2), ('im1', u'skyscraper_4.jpg'), ('im2', u'skyscraper_33.jpg'), ('im3', u'skyscraper_63.jpg'), ('im4', u'skyscraper_3.jpg'), ('im5', u'skyscraper_20.jpg'), ('im6', u'skyscraper_29.jpg'), ('im7', u'skyscraper_8.jpg'), ('im8', u'skyscraper_52.jpg'), ('im9', u'skyscraper_46.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 10), ('category', u'stream'), ('target_position', 8), ('selected_image', u'stream_56.jpg'), ('quintile', 4), ('im1', u'stream_56.jpg'), ('im2', u'stream_3.jpg'), ('im3', u'stream_64.jpg'), ('im4', u'stream_2.jpg'), ('im5', u'stream_1.jpg'), ('im6', u'stream_63.jpg'), ('im7', u'stream_39.jpg'), ('im8', u'stream_4.jpg'), ('im9', u'stream_53.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 11), ('category', u'waves'), ('target_position', 8), ('selected_image', u'waves_17.jpg'), ('quintile', 3), ('im1', u'waves_17.jpg'), ('im2', u'waves_14.jpg'), ('im3', u'waves_15.jpg'), ('im4', u'waves_31.jpg'), ('im5', u'waves_16.jpg'), ('im6', u'waves_7.jpg'), ('im7', u'waves_5.jpg'), ('im8', u'waves_62.jpg'), ('im9', u'waves_27.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 12), ('category', u'airport'), ('target_position', 8), ('selected_image', u'airport_25.jpg'), ('quintile', 2), ('im1', u'airport_25.jpg'), ('im2', u'airport_7.jpg'), ('im3', u'airport_39.jpg'), ('im4', u'airport_21.jpg'), ('im5', u'airport_27.jpg'), ('im6', u'airport_42.jpg'), ('im7', u'airport_22.jpg'), ('im8', u'airport_10.jpg'), ('im9', u'airport_63.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 13), ('category', u'bar'), ('target_position', 6), ('selected_image', u'bar_61.jpg'), ('quintile', 4), ('im1', u'bar_61.jpg'), ('im2', u'bar_65.jpg'), ('im3', u'bar_46.jpg'), ('im4', u'bar_62.jpg'), ('im5', u'bar_41.jpg'), ('im6', u'bar_20.jpg'), ('im7', u'bar_8.jpg'), ('im8', u'bar_17.jpg'), ('im9', u'bar_5.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 14), ('category', u'cavern'), ('target_position', 3), ('selected_image', u'cavern_68.jpg'), ('quintile', 3), ('im1', u'cavern_68.jpg'), ('im2', u'cavern_7.jpg'), ('im3', u'cavern_39.jpg'), ('im4', u'cavern_60.jpg'), ('im5', u'cavern_38.jpg'), ('im6', u'cavern_36.jpg'), ('im7', u'cavern_52.jpg'), ('im8', u'cavern_47.jpg'), ('im9', u'cavern_57.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 15), ('category', u'playground'), ('target_position', 4), ('selected_image', u'playground_19.jpg'), ('quintile', 2), ('im1', u'playground_19.jpg'), ('im2', u'playground_63.jpg'), ('im3', u'playground_54.jpg'), ('im4', u'playground_29.jpg'), ('im5', u'playground_42.jpg'), ('im6', u'playground_66.jpg'), ('im7', u'playground_38.jpg'), ('im8', u'playground_43.jpg'), ('im9', u'playground_58.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 16), ('category', u'stairscase'), ('target_position', 2), ('selected_image', u'stairscase_34.jpg'), ('quintile', 4), ('im1', u'stairscase_34.jpg'), ('im2', u'stairscase_33.jpg'), ('im3', u'stairscase_48.jpg'), ('im4', u'stairscase_27.jpg'), ('im5', u'stairscase_15.jpg'), ('im6', u'stairscase_63.jpg'), ('im7', u'stairscase_12.jpg'), ('im8', u'stairscase_65.jpg'), ('im9', u'stairscase_7.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 17), ('category', u'seaport'), ('target_position', 8), ('selected_image', u'seaport_18.jpg'), ('quintile', 3), ('im1', u'seaport_18.jpg'), ('im2', u'seaport_65.jpg'), ('im3', u'seaport_56.jpg'), ('im4', u'seaport_10.jpg'), ('im5', u'seaport_38.jpg'), ('im6', u'seaport_63.jpg'), ('im7', u'seaport_64.jpg'), ('im8', u'seaport_58.jpg'), ('im9', u'seaport_28.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 18), ('category', u'house'), ('target_position', 1), ('selected_image', u'house_55.jpg'), ('quintile', 2), ('im1', u'house_12.jpg'), ('im2', u'house_55.jpg'), ('im3', u'house_23.jpg'), ('im4', u'house_56.jpg'), ('im5', u'house_25.jpg'), ('im6', u'house_50.jpg'), ('im7', u'house_2.jpg'), ('im8', u'house_6.jpg'), ('im9', u'house_48.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 19), ('category', u'mountainwhite'), ('target_position', 4), ('selected_image', u'mountainwhite_29.jpg'), ('quintile', 4), ('im1', u'mountainwhite_29.jpg'), ('im2', u'mountainwhite_11.jpg'), ('im3', u'mountainwhite_9.jpg'), ('im4', u'mountainwhite_40.jpg'), ('im5', u'mountainwhite_27.jpg'), ('im6', u'mountainwhite_32.jpg'), ('im7', u'mountainwhite_36.jpg'), ('im8', u'mountainwhite_10.jpg'), ('im9', u'mountainwhite_35.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 20), ('category', u'field'), ('target_position', 3), ('selected_image', u'field_25.jpg'), ('quintile', 3), ('im1', u'field_25.jpg'), ('im2', u'field_48.jpg'), ('im3', u'field_2.jpg'), ('im4', u'field_3.jpg'), ('im5', u'field_28.jpg'), ('im6', u'field_7.jpg'), ('im7', u'field_18.jpg'), ('im8', u'field_45.jpg'), ('im9', u'field_39.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 21), ('category', u'corridor'), ('target_position', 3), ('selected_image', u'corridor_54.jpg'), ('quintile', 2), ('im1', u'corridor_54.jpg'), ('im2', u'corridor_55.jpg'), ('im3', u'corridor_34.jpg'), ('im4', u'corridor_17.jpg'), ('im5', u'corridor_2.jpg'), ('im6', u'corridor_5.jpg'), ('im7', u'corridor_37.jpg'), ('im8', u'corridor_25.jpg'), ('im9', u'corridor_20.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 22), ('category', u'library'), ('target_position', 5), ('selected_image', u'library_57.jpg'), ('quintile', 4), ('im1', u'library_57.jpg'), ('im2', u'library_37.jpg'), ('im3', u'library_42.jpg'), ('im4', u'library_50.jpg'), ('im5', u'library_11.jpg'), ('im6', u'library_52.jpg'), ('im7', u'library_36.jpg'), ('im8', u'library_49.jpg'), ('im9', u'library_46.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 23), ('category', u'homeoffice'), ('target_position', 8), ('selected_image', u'homeoffice_47.jpg'), ('quintile', 3), ('im1', u'homeoffice_47.jpg'), ('im2', u'homeoffice_49.jpg'), ('im3', u'homeoffice_5.jpg'), ('im4', u'homeoffice_53.jpg'), ('im5', u'homeoffice_54.jpg'), ('im6', u'homeoffice_26.jpg'), ('im7', u'homeoffice_51.jpg'), ('im8', u'homeoffice_34.jpg'), ('im9', u'homeoffice_23.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 24), ('category', u'frontshop'), ('target_position', 7), ('selected_image', u'frontshop_47.jpg'), ('quintile', 2), ('im1', u'frontshop_47.jpg'), ('im2', u'frontshop_23.jpg'), ('im3', u'frontshop_7.jpg'), ('im4', u'frontshop_58.jpg'), ('im5', u'frontshop_30.jpg'), ('im6', u'frontshop_50.jpg'), ('im7', u'frontshop_45.jpg'), ('im8', u'frontshop_10.jpg'), ('im9', u'frontshop_44.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 25), ('category', u'facadebuilding'), ('target_position', 1), ('selected_image', u'facadebuilding_39.jpg'), ('quintile', 4), ('im1', u'facadebuilding_35.jpg'), ('im2', u'facadebuilding_39.jpg'), ('im3', u'facadebuilding_17.jpg'), ('im4', u'facadebuilding_6.jpg'), ('im5', u'facadebuilding_61.jpg'), ('im6', u'facadebuilding_50.jpg'), ('im7', u'facadebuilding_67.jpg'), ('im8', u'facadebuilding_51.jpg'), ('im9', u'facadebuilding_40.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 26), ('category', u'restaurant'), ('target_position', 2), ('selected_image', u'restaurant_30.jpg'), ('quintile', 3), ('im1', u'restaurant_30.jpg'), ('im2', u'restaurant_40.jpg'), ('im3', u'restaurant_61.jpg'), ('im4', u'restaurant_8.jpg'), ('im5', u'restaurant_57.jpg'), ('im6', u'restaurant_66.jpg'), ('im7', u'restaurant_15.jpg'), ('im8', u'restaurant_27.jpg'), ('im9', u'restaurant_67.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 27), ('category', u'bedroom'), ('target_position', 6), ('selected_image', u'bedroom_44.jpg'), ('quintile', 2), ('im1', u'bedroom_44.jpg'), ('im2', u'bedroom_25.jpg'), ('im3', u'bedroom_40.jpg'), ('im4', u'bedroom_66.jpg'), ('im5', u'bedroom_55.jpg'), ('im6', u'bedroom_38.jpg'), ('im7', u'bedroom_61.jpg'), ('im8', u'bedroom_3.jpg'), ('im9', u'bedroom_18.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 28), ('category', u'castle'), ('target_position', 1), ('selected_image', u'castle_13.jpg'), ('quintile', 4), ('im1', u'castle_35.jpg'), ('im2', u'castle_13.jpg'), ('im3', u'castle_36.jpg'), ('im4', u'castle_12.jpg'), ('im5', u'castle_50.jpg'), ('im6', u'castle_41.jpg'), ('im7', u'castle_55.jpg'), ('im8', u'castle_43.jpg'), ('im9', u'castle_30.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 29), ('category', u'beach'), ('target_position', 1), ('selected_image', u'beach_8.jpg'), ('quintile', 3), ('im1', u'beach_45.jpg'), ('im2', u'beach_8.jpg'), ('im3', u'beach_65.jpg'), ('im4', u'beach_67.jpg'), ('im5', u'beach_40.jpg'), ('im6', u'beach_15.jpg'), ('im7', u'beach_20.jpg'), ('im8', u'beach_68.jpg'), ('im9', u'beach_18.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 30), ('category', u'canyon'), ('target_position', 5), ('selected_image', u'canyon_35.jpg'), ('quintile', 2), ('im1', u'canyon_35.jpg'), ('im2', u'canyon_14.jpg'), ('im3', u'canyon_31.jpg'), ('im4', u'canyon_10.jpg'), ('im5', u'canyon_67.jpg'), ('im6', u'canyon_5.jpg'), ('im7', u'canyon_4.jpg'), ('im8', u'canyon_26.jpg'), ('im9', u'canyon_22.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 31), ('category', u'parking'), ('target_position', 8), ('selected_image', u'parking_31.jpg'), ('quintile', 4), ('im1', u'parking_31.jpg'), ('im2', u'parking_4.jpg'), ('im3', u'parking_26.jpg'), ('im4', u'parking_42.jpg'), ('im5', u'parking_58.jpg'), ('im6', u'parking_33.jpg'), ('im7', u'parking_45.jpg'), ('im8', u'parking_21.jpg'), ('im9', u'parking_43.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 32), ('category', u'swimmingpool'), ('target_position', 2), ('selected_image', u'swimmingpool_19.jpg'), ('quintile', 3), ('im1', u'swimmingpool_19.jpg'), ('im2', u'swimmingpool_12.jpg'), ('im3', u'swimmingpool_44.jpg'), ('im4', u'swimmingpool_31.jpg'), ('im5', u'swimmingpool_48.jpg'), ('im6', u'swimmingpool_22.jpg'), ('im7', u'swimmingpool_38.jpg'), ('im8', u'swimmingpool_50.jpg'), ('im9', u'swimmingpool_43.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 33), ('category', u'doors'), ('target_position', 2), ('selected_image', u'doors_50.jpg'), ('quintile', 2), ('im1', u'doors_50.jpg'), ('im2', u'doors_61.jpg'), ('im3', u'doors_18.jpg'), ('im4', u'doors_27.jpg'), ('im5', u'doors_67.jpg'), ('im6', u'doors_56.jpg'), ('im7', u'doors_26.jpg'), ('im8', u'doors_68.jpg'), ('im9', u'doors_51.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 34), ('category', u'amusementpark'), ('target_position', 9), ('selected_image', u'amusementpark_28.jpg'), ('quintile', 4), ('im1', u'amusementpark_28.jpg'), ('im2', u'amusementpark_68.jpg'), ('im3', u'amusementpark_19.jpg'), ('im4', u'amusementpark_27.jpg'), ('im5', u'amusementpark_48.jpg'), ('im6', u'amusementpark_13.jpg'), ('im7', u'amusementpark_6.jpg'), ('im8', u'amusementpark_18.jpg'), ('im9', u'amusementpark_26.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 35), ('category', u'barn'), ('target_position', 6), ('selected_image', u'barn_61.jpg'), ('quintile', 3), ('im1', u'barn_61.jpg'), ('im2', u'barn_41.jpg'), ('im3', u'barn_36.jpg'), ('im4', u'barn_17.jpg'), ('im5', u'barn_21.jpg'), ('im6', u'barn_12.jpg'), ('im7', u'barn_25.jpg'), ('im8', u'barn_55.jpg'), ('im9', u'barn_23.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 36), ('category', u'grocerystore'), ('target_position', 6), ('selected_image', u'grocerystore_25.jpg'), ('quintile', 2), ('im1', u'grocerystore_25.jpg'), ('im2', u'grocerystore_60.jpg'), ('im3', u'grocerystore_27.jpg'), ('im4', u'grocerystore_57.jpg'), ('im5', u'grocerystore_33.jpg'), ('im6', u'grocerystore_26.jpg'), ('im7', u'grocerystore_22.jpg'), ('im8', u'grocerystore_29.jpg'), ('im9', u'grocerystore_47.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 37), ('category', u'garden'), ('target_position', 7), ('selected_image', u'garden_12.jpg'), ('quintile', 4), ('im1', u'garden_12.jpg'), ('im2', u'garden_46.jpg'), ('im3', u'garden_49.jpg'), ('im4', u'garden_9.jpg'), ('im5', u'garden_2.jpg'), ('im6', u'garden_15.jpg'), ('im7', u'garden_39.jpg'), ('im8', u'garden_34.jpg'), ('im9', u'garden_32.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 38), ('category', u'train'), ('target_position', 7), ('selected_image', u'train_64.jpg'), ('quintile', 3), ('im1', u'train_64.jpg'), ('im2', u'train_68.jpg'), ('im3', u'train_67.jpg'), ('im4', u'train_56.jpg'), ('im5', u'train_61.jpg'), ('im6', u'train_45.jpg'), ('im7', u'train_8.jpg'), ('im8', u'train_62.jpg'), ('im9', u'train_46.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 39), ('category', u'greenhouse'), ('target_position', 8), ('selected_image', u'greenhouse_63.jpg'), ('quintile', 2), ('im1', u'greenhouse_63.jpg'), ('im2', u'greenhouse_48.jpg'), ('im3', u'greenhouse_26.jpg'), ('im4', u'greenhouse_25.jpg'), ('im5', u'greenhouse_1.jpg'), ('im6', u'greenhouse_22.jpg'), ('im7', u'greenhouse_44.jpg'), ('im8', u'greenhouse_40.jpg'), ('im9', u'greenhouse_18.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 40), ('category', u'woods'), ('target_position', 9), ('selected_image', u'woods_3.jpg'), ('quintile', 4), ('im1', u'woods_3.jpg'), ('im2', u'woods_65.jpg'), ('im3', u'woods_17.jpg'), ('im4', u'woods_26.jpg'), ('im5', u'woods_20.jpg'), ('im6', u'woods_16.jpg'), ('im7', u'woods_36.jpg'), ('im8', u'woods_42.jpg'), ('im9', u'woods_54.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 41), ('category', u'desert'), ('target_position', 2), ('selected_image', u'desert_64.jpg'), ('quintile', 3), ('im1', u'desert_64.jpg'), ('im2', u'desert_4.jpg'), ('im3', u'desert_41.jpg'), ('im4', u'desert_42.jpg'), ('im5', u'desert_38.jpg'), ('im6', u'desert_40.jpg'), ('im7', u'desert_43.jpg'), ('im8', u'desert_63.jpg'), ('im9', u'desert_44.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 42), ('category', u'warehouse'), ('target_position', 7), ('selected_image', u'warehouse_57.jpg'), ('quintile', 2), ('im1', u'warehouse_57.jpg'), ('im2', u'warehouse_5.jpg'), ('im3', u'warehouse_74.jpg'), ('im4', u'warehouse_69.jpg'), ('im5', u'warehouse_59.jpg'), ('im6', u'warehouse_28.jpg'), ('im7', u'warehouse_61.jpg'), ('im8', u'warehouse_49.jpg'), ('im9', u'warehouse_6.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 43), ('category', u'bridge'), ('target_position', 1), ('selected_image', u'bridge_51.jpg'), ('quintile', 4), ('im1', u'bridge_45.jpg'), ('im2', u'bridge_51.jpg'), ('im3', u'bridge_42.jpg'), ('im4', u'bridge_62.jpg'), ('im5', u'bridge_66.jpg'), ('im6', u'bridge_21.jpg'), ('im7', u'bridge_47.jpg'), ('im8', u'bridge_11.jpg'), ('im9', u'bridge_28.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 44), ('category', u'temple'), ('target_position', 5), ('selected_image', u'temple_68.jpg'), ('quintile', 3), ('im1', u'temple_68.jpg'), ('im2', u'temple_29.jpg'), ('im3', u'temple_62.jpg'), ('im4', u'temple_34.jpg'), ('im5', u'temple_45.jpg'), ('im6', u'temple_41.jpg'), ('im7', u'temple_14.jpg'), ('im8', u'temple_50.jpg'), ('im9', u'temple_30.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 45), ('category', u'street'), ('target_position', 7), ('selected_image', u'street_1.jpg'), ('quintile', 2), ('im1', u'street_1.jpg'), ('im2', u'street_62.jpg'), ('im3', u'street_29.jpg'), ('im4', u'street_59.jpg'), ('im5', u'street_22.jpg'), ('im6', u'street_60.jpg'), ('im7', u'street_14.jpg'), ('im8', u'street_42.jpg'), ('im9', u'street_39.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 46), ('category', u'diningroom'), ('target_position', 3), ('selected_image', u'diningroom_32.jpg'), ('quintile', 4), ('im1', u'diningroom_32.jpg'), ('im2', u'diningroom_38.jpg'), ('im3', u'diningroom_27.jpg'), ('im4', u'diningroom_64.jpg'), ('im5', u'diningroom_19.jpg'), ('im6', u'diningroom_2.jpg'), ('im7', u'diningroom_46.jpg'), ('im8', u'diningroom_65.jpg'), ('im9', u'diningroom_15.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 47), ('category', u'campsite'), ('target_position', 7), ('selected_image', u'campsite_8.jpg'), ('quintile', 3), ('im1', u'campsite_8.jpg'), ('im2', u'campsite_51.jpg'), ('im3', u'campsite_9.jpg'), ('im4', u'campsite_21.jpg'), ('im5', u'campsite_15.jpg'), ('im6', u'campsite_37.jpg'), ('im7', u'campsite_25.jpg'), ('im8', u'campsite_5.jpg'), ('im9', u'campsite_65.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 48), ('category', u'industrialarea'), ('target_position', 2), ('selected_image', u'industrialarea_38.jpg'), ('quintile', 2), ('im1', u'industrialarea_38.jpg'), ('im2', u'industrialarea_64.jpg'), ('im3', u'industrialarea_45.jpg'), ('im4', u'industrialarea_37.jpg'), ('im5', u'industrialarea_10.jpg'), ('im6', u'industrialarea_8.jpg'), ('im7', u'industrialarea_28.jpg'), ('im8', u'industrialarea_40.jpg'), ('im9', u'industrialarea_18.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 49), ('category', u'constructionsite'), ('target_position', 9), ('selected_image', u'constructionsite_56.jpg'), ('quintile', 4), ('im1', u'constructionsite_56.jpg'), ('im2', u'constructionsite_12.jpg'), ('im3', u'constructionsite_19.jpg'), ('im4', u'constructionsite_57.jpg'), ('im5', u'constructionsite_5.jpg'), ('im6', u'constructionsite_68.jpg'), ('im7', u'constructionsite_62.jpg'), ('im8', u'constructionsite_52.jpg'), ('im9', u'constructionsite_63.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 50), ('category', u'closet'), ('target_position', 2), ('selected_image', u'closet_7.jpg'), ('quintile', 3), ('im1', u'closet_7.jpg'), ('im2', u'closet_28.jpg'), ('im3', u'closet_9.jpg'), ('im4', u'closet_35.jpg'), ('im5', u'closet_29.jpg'), ('im6', u'closet_54.jpg'), ('im7', u'closet_56.jpg'), ('im8', u'closet_27.jpg'), ('im9', u'closet_50.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 51), ('category', u'buffet'), ('target_position', 7), ('selected_image', u'buffet_18.jpg'), ('quintile', 2), ('im1', u'buffet_18.jpg'), ('im2', u'buffet_50.jpg'), ('im3', u'buffet_19.jpg'), ('im4', u'buffet_52.jpg'), ('im5', u'buffet_39.jpg'), ('im6', u'buffet_21.jpg'), ('im7', u'buffet_29.jpg'), ('im8', u'buffet_59.jpg'), ('im9', u'buffet_37.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 52), ('category', u'conferenceroom'), ('target_position', 5), ('selected_image', u'conferenceroom_5.jpg'), ('quintile', 4), ('im1', u'conferenceroom_5.jpg'), ('im2', u'conferenceroom_8.jpg'), ('im3', u'conferenceroom_27.jpg'), ('im4', u'conferenceroom_3.jpg'), ('im5', u'conferenceroom_37.jpg'), ('im6', u'conferenceroom_36.jpg'), ('im7', u'conferenceroom_4.jpg'), ('im8', u'conferenceroom_62.jpg'), ('im9', u'conferenceroom_22.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 53), ('category', u'gym'), ('target_position', 5), ('selected_image', u'gym_48.jpg'), ('quintile', 3), ('im1', u'gym_48.jpg'), ('im2', u'gym_26.jpg'), ('im3', u'gym_37.jpg'), ('im4', u'gym_58.jpg'), ('im5', u'gym_51.jpg'), ('im6', u'gym_55.jpg'), ('im7', u'gym_29.jpg'), ('im8', u'gym_34.jpg'), ('im9', u'gym_50.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 54), ('category', u'countryroad'), ('target_position', 2), ('selected_image', u'countryroad_10.jpg'), ('quintile', 2), ('im1', u'countryroad_10.jpg'), ('im2', u'countryroad_24.jpg'), ('im3', u'countryroad_50.jpg'), ('im4', u'countryroad_51.jpg'), ('im5', u'countryroad_20.jpg'), ('im6', u'countryroad_52.jpg'), ('im7', u'countryroad_19.jpg'), ('im8', u'countryroad_39.jpg'), ('im9', u'countryroad_12.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 55), ('category', u'golfcourse'), ('target_position', 7), ('selected_image', u'golfcourse_16.jpg'), ('quintile', 4), ('im1', u'golfcourse_16.jpg'), ('im2', u'golfcourse_2.jpg'), ('im3', u'golfcourse_1.jpg'), ('im4', u'golfcourse_53.jpg'), ('im5', u'golfcourse_50.jpg'), ('im6', u'golfcourse_6.jpg'), ('im7', u'golfcourse_39.jpg'), ('im8', u'golfcourse_21.jpg'), ('im9', u'golfcourse_15.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 56), ('category', u'ruins'), ('target_position', 2), ('selected_image', u'ruins_27.jpg'), ('quintile', 3), ('im1', u'ruins_27.jpg'), ('im2', u'ruins_10.jpg'), ('im3', u'ruins_18.jpg'), ('im4', u'ruins_26.jpg'), ('im5', u'ruins_22.jpg'), ('im6', u'ruins_58.jpg'), ('im7', u'ruins_21.jpg'), ('im8', u'ruins_64.jpg'), ('im9', u'ruins_47.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 57), ('category', u'classroom'), ('target_position', 9), ('selected_image', u'classroom_27.jpg'), ('quintile', 2), ('im1', u'classroom_27.jpg'), ('im2', u'classroom_31.jpg'), ('im3', u'classroom_66.jpg'), ('im4', u'classroom_62.jpg'), ('im5', u'classroom_3.jpg'), ('im6', u'classroom_28.jpg'), ('im7', u'classroom_61.jpg'), ('im8', u'classroom_4.jpg'), ('im9', u'classroom_58.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 58), ('category', u'coast'), ('target_position', 1), ('selected_image', u'coast_23.jpg'), ('quintile', 4), ('im1', u'coast_44.jpg'), ('im2', u'coast_23.jpg'), ('im3', u'coast_7.jpg'), ('im4', u'coast_43.jpg'), ('im5', u'coast_8.jpg'), ('im6', u'coast_58.jpg'), ('im7', u'coast_65.jpg'), ('im8', u'coast_3.jpg'), ('im9', u'coast_5.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 59), ('category', u'hairsalon'), ('target_position', 3), ('selected_image', u'hairsalon_66.jpg'), ('quintile', 3), ('im1', u'hairsalon_66.jpg'), ('im2', u'hairsalon_2.jpg'), ('im3', u'hairsalon_5.jpg'), ('im4', u'hairsalon_6.jpg'), ('im5', u'hairsalon_57.jpg'), ('im6', u'hairsalon_34.jpg'), ('im7', u'hairsalon_17.jpg'), ('im8', u'hairsalon_60.jpg'), ('im9', u'hairsalon_67.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 60), ('category', u'underwater'), ('target_position', 1), ('selected_image', u'underwater_60.jpg'), ('quintile', 2), ('im1', u'underwater_2.jpg'), ('im2', u'underwater_60.jpg'), ('im3', u'underwater_17.jpg'), ('im4', u'underwater_32.jpg'), ('im5', u'underwater_3.jpg'), ('im6', u'underwater_45.jpg'), ('im7', u'underwater_41.jpg'), ('im8', u'underwater_33.jpg'), ('im9', u'underwater_66.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 61), ('category', u'livingroom'), ('target_position', 7), ('selected_image', u'livingroom_9.jpg'), ('quintile', 4), ('im1', u'livingroom_9.jpg'), ('im2', u'livingroom_62.jpg'), ('im3', u'livingroom_14.jpg'), ('im4', u'livingroom_38.jpg'), ('im5', u'livingroom_21.jpg'), ('im6', u'livingroom_29.jpg'), ('im7', u'livingroom_24.jpg'), ('im8', u'livingroom_37.jpg'), ('im9', u'livingroom_53.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 62), ('category', u'toystore'), ('target_position', 2), ('selected_image', u'toystore_19.jpg'), ('quintile', 3), ('im1', u'toystore_19.jpg'), ('im2', u'toystore_34.jpg'), ('im3', u'toystore_26.jpg'), ('im4', u'toystore_58.jpg'), ('im5', u'toystore_28.jpg'), ('im6', u'toystore_3.jpg'), ('im7', u'toystore_20.jpg'), ('im8', u'toystore_33.jpg'), ('im9', u'toystore_51.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 63), ('category', u'gas-station'), ('target_position', 1), ('selected_image', u'gas_station_47.jpg'), ('quintile', 2), ('im1', u'gas_station_56.jpg'), ('im2', u'gas_station_47.jpg'), ('im3', u'gas_station_24.jpg'), ('im4', u'gas_station_60.jpg'), ('im5', u'gas_station_52.jpg'), ('im6', u'gas_station_28.jpg'), ('im7', u'gas_station_42.jpg'), ('im8', u'gas_station_59.jpg'), ('im9', u'gas_station_18.jpg')]), OrderedDict([('prot_id', 1), ('trial_id', 64), ('category', u'cemetery'), ('target_position', 1), ('selected_image', u'cemetery_20.jpg'), ('quintile', 4), ('im1', u'cemetery_52.jpg'), ('im2', u'cemetery_20.jpg'), ('im3', u'cemetery_49.jpg'), ('im4', u'cemetery_28.jpg'), ('im5', u'cemetery_26.jpg'), ('im6', u'cemetery_47.jpg'), ('im7', u'cemetery_46.jpg'), ('im8', u'cemetery_67.jpg'), ('im9', u'cemetery_41.jpg')])]" valType="str"/>
+      <Param name="conditions" updates="None" val="None" valType="str"/>
       <Param name="Selected rows" updates="None" val="" valType="str"/>
     </LoopInitiator>
     <Routine name="trial"/>
     <LoopTerminator name="trials"/>
+    <Routine name="bye"/>
   </Flow>
 </PsychoPy2experiment>
