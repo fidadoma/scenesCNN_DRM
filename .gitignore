@@ -41,3 +41,7 @@ data
 
 # no plots
 plots
+
+# psychopy dirs
+psychopy/stimuli
+psychopy/protocols
