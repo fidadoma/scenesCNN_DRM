@@ -8,6 +8,7 @@ test_that("test protocol", {
     trial_id = col_integer(),
     category = col_character(),
     target_position = col_integer(),
+    selected_image = col_character(),
     quintile = col_integer(),
     im1 = col_character(),
     im2 = col_character(),
@@ -17,7 +18,8 @@ test_that("test protocol", {
     im6 = col_character(),
     im7 = col_character(),
     im8 = col_character(),
-    im9 = col_character())
+    im9 = col_character()
+  )
   p_pth <- here::here("data","protocols", "P001.csv")
   
   # load fc7 data
