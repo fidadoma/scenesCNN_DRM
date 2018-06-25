@@ -4,15 +4,16 @@
 #   +
 # - 0 +
 #   -
+library(dplyr)
 imsize <- 256
 separsize <- 30
 
 x <- -c(separsize+imsize,
-       imsize/2,
-       imsize/2 - separsize)
-y <- c(imsize/2+separsize+imsize,
-       imsize/2,
-       imsize/2 + separsize)
+       0,
+       -imsize - separsize)
+y <- c(imsize+separsize,
+       0,
+       -imsize - separsize)
 
 expand.grid(x =x ,y = y) %>% mutate(im = 1:9)
 
