@@ -45,3 +45,4 @@ plots
 # psychopy dirs
 psychopy/stimuli
 psychopy/protocols
+psychopy/*lastrun.py

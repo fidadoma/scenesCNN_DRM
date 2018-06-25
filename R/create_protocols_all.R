@@ -1,6 +1,6 @@
 rm(list = ls())
 
-set.seed(180620)
+set.seed(180625)
 
 # prepare data ------------------------------------------------------------
 
@@ -24,8 +24,6 @@ n_points <- 9 # how many images will be there in grid
 # selected_images <- image_info %>% sample_n(n)
 categories <- sample(image_info$category %>% unique())
 
-
-
 variants <- expand.grid(2:4,2:4,2:4) %>% filter(Var1 != Var2, Var2 != Var3, Var1 != Var3)
 nvar <- nrow(variants)
 tm <- create.time.measure(n*nvar)
@@ -48,8 +46,8 @@ for(j in 1:nvar) {
     this_ix <- image_info$new == r$new
     # close to center ----------------------------------------------------------
     
-    fc7_thiscat <- fc7[this_cat_ix,this_cat_ix]
-    fc7_point <- fc7[this_ix, this_cat_ix]
+    
+    fc7_point <- fc7[this_ix, ]
     qs <- compute_quintiles(fc7_point)
     gr_close <- select_closest_points(fc7_point, n_points - 1)
     gr_close_names <- names(gr_close)
@@ -69,5 +67,5 @@ for(j in 1:nvar) {
     tm <- update(tm)
     print(tm)
   }
-  write_csv(p, file.path(outdir, sprintf("P%03d_categ.csv",j)))
+  write_csv(p, file.path(outdir, sprintf("P%03d_all.csv",j)))
 }

@@ -20,7 +20,7 @@ test_that("test protocol", {
     im8 = col_character(),
     im9 = col_character()
   )
-  p_pth <- here::here("data","protocols", "P001.csv")
+  p_pth <- here::here("data","protocols", "P001_categ.csv")
   
   # load fc7 data
   load(here::here("data/konkle_180621.RData"))
@@ -65,7 +65,7 @@ test_that("test protocol", {
     fc7_all_ix <- colnames(fc7) %in% just_images[i,] %>% as.matrix() %>% c()
     fc7_row <- fc7[colnames(fc7) == p$selected_image[i],fc7_all_ix]
     
-    rest_position   <- names(fc7_row) == p$target_image[i]
+    #rest_position   <- names(fc7_row) == p$target_image[i]
     target_position <- names(fc7_row) == (p[[paste0("im",p$target_position[i])]][i])
     expect_equivalent(max(fc7_row), 
                  fc7_row[target_position])
