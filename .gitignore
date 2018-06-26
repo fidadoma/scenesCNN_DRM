@@ -46,3 +46,5 @@ plots
 psychopy/stimuli
 psychopy/protocols
 psychopy/*lastrun.py
+
+reports/*.html

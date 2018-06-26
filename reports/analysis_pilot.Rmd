@@ -9,7 +9,7 @@ output: html_document
 
 ## Load data
 
-```{r}
+```{r, warning=FALSE}
 
 library(tidyverse)
 
@@ -36,7 +36,7 @@ col_types <- cols(
 )
 
 df <- data_pth %>% 
-  dir(full.names = T) %>% 
+  dir(pattern = "*.csv", full.names = T) %>% 
   purrr::map(read_csv, col_types = col_types) %>% 
   bind_rows() 
 
@@ -58,6 +58,17 @@ df %>%
 df %>% 
   group_by(category_type) %>% 
   summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2))
+
+df %>% 
+  group_by(category) %>% 
+  summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2), n= n()) %>% 
+  arrange(-m)
+
+df %>% 
+  group_by(category,quintile) %>% 
+  summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2), n= n()) %>% 
+  arrange(category,-m)
+
 
   
 ```
