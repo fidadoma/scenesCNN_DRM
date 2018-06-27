@@ -11,6 +11,8 @@ output: html_document
 
 ```{r, warning=FALSE}
 
+load(here::here("data","konkle_180621.RData"))
+
 library(tidyverse)
 
 data_pth <- here::here("data", "results", "categ") 
@@ -84,50 +86,49 @@ df %>% ggplot(aes(x = quintile, y = correct)) +
   geom_hline(yintercept = 1/9) 
 ```
 
-# Analysis all
+## Express the distances as ratio
 
-## Load data
+We are now sampling from the quintiles, we express the distances as ratio of average within group distance and between group distance
 
 ```{r}
-
-library(tidyverse)
-
-data_pth <- here::here("data", "results", "all") 
-
-col_types <- cols(
-  .default = col_character(),
-  prot_id = col_integer(),
-  trial_id = col_integer(),
-  target_position = col_integer(),
-  quintile = col_integer(),
-  trials.thisRepN = col_integer(),
-  trials.thisTrialN = col_integer(),
-  trials.thisN = col_integer(),
-  trials.thisIndex = col_integer(),
-  mouse.x = col_double(),
-  mouse.y = col_double(),
-  mouse.leftButton = col_integer(),
-  mouse.midButton = col_integer(),
-  mouse.rightButton = col_integer(),
-  protocol_id = col_integer(),
-  subject_id = col_integer(),
-  frameRate = col_double()
-)
-
-df <- data_pth %>% 
-  dir(full.names = T) %>% 
-  purrr::map(read_csv, col_types = col_types) %>% 
-  bind_rows() 
-
-df <- df %>%
-  mutate(target_image = paste0("image",target_position),
-         correct = as.numeric(target_image == mouse.clicked_name))
+n <- nrow(df)
+fc7_names <- colnames(fc7)
+df$d_ratio <- NA_real_ 
+for (i in 1:n) {
+  target_image <- df[[paste0("im",df$target_position[i])]][i]
+  center_image <- df$selected_image[i]
+  rest_images  <- df[i,paste0("im", setdiff(1:9,df$target_position[i]))] %>% as.matrix() %>% c()
+  d_rest <- fc7[center_image == fc7_names, fc7_names %in% rest_images]
+  df$d_ratio[i] <- fc7[center_image == fc7_names, target_image == fc7_names] / mean(d_rest[d_rest>0])
+    
+}
 
 ```
 
+### And visualize
+
 ```{r}
-df %>% ggplot(aes(x = quintile, y = correct)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
+df %>% ggplot(aes(x = d_ratio, y = correct)) + 
+  geom_point() +
+  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
   ylim(0,1)+
-  theme(aspect.ratio = 1)
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) 
+
+```
+
+### Correlation between raters
+
+```{r ICC}
+x <- df %>% select(prot_id, subject_id, correct) %>%
+  group_by(prot_id) %>%
+  summarize(ICC = psych::ICC(cbind()))
+cor(df$correct[df$subject_id == 1],df$correct[df$subject_id == 7])
+cor(df$correct[df$subject_id == 8],df$correct[df$subject_id == 100])
+cor(df$correct[df$subject_id == 3],df$correct[df$subject_id == 9])
+cor(df$correct[df$subject_id == 4],df$correct[df$subject_id == 10])
+cor(df$correct[df$subject_id == 5],df$correct[df$subject_id == 11])
+cor(df$correct[df$subject_id == 6],df$correct[df$subject_id == 12])
+
+
 ```
