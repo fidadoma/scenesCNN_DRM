@@ -75,18 +75,37 @@ df %>%
   
 ```
 
+# Quintiles
 
-# Visualize
+## Visualize
 
 ```{r}
 df %>% ggplot(aes(x = quintile, y = correct)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9)
+
+df %>% ggplot(aes(x = quintile, y = correct)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  facet_wrap(~subject_id) +
   geom_hline(yintercept = 1/9) 
 ```
 
-## Express the distances as ratio
+## Test
+
+```{r lmer}
+library(lme4)
+
+glm1 <- glmer(cbind(correct,1-correct) ~ quintile + (1|subject_id) + (1|category), df, family = binomial())
+glm1_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+anova(glm1, glm_null)
+
+```
+
+# Express the distances as ratio
 
 We are now sampling from the quintiles, we express the distances as ratio of average within group distance and between group distance
 
@@ -105,7 +124,7 @@ for (i in 1:n) {
 
 ```
 
-### And visualize
+## Visualize
 
 ```{r}
 df %>% ggplot(aes(x = d_ratio, y = correct)) + 
@@ -115,15 +134,27 @@ df %>% ggplot(aes(x = d_ratio, y = correct)) +
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) 
 
+df %>% ggplot(aes(x = d_ratio, y = correct)) + 
+  geom_point() +
+  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) 
+
 ```
 
-### test
+## Test
 
 ```{r lmer}
 library(lme4)
+
+glm2 <- glmer(cbind(correct,1-correct) ~ d_ratio + (1|subject_id) + (1|category), df, family = binomial())
+glm_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+anova(glm2, glm_null)
+
 ```
 
-### Correlation between raters
+# Correlation between raters
 
 ```{r ICC}
 x <- df %>% select(prot_id, subject_id, correct) %>%
@@ -135,6 +166,5 @@ cor(df$correct[df$subject_id == 3],df$correct[df$subject_id == 9])
 cor(df$correct[df$subject_id == 4],df$correct[df$subject_id == 10])
 cor(df$correct[df$subject_id == 5],df$correct[df$subject_id == 11])
 cor(df$correct[df$subject_id == 6],df$correct[df$subject_id == 12])
-
 
 ```
