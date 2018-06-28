@@ -9,11 +9,14 @@ output: html_document
 
 ## Load data
 
-```{r, warning=FALSE}
-
+```{r load data, warning=FALSE, message=FALSE}
+set.seed(167)
 load(here::here("data","konkle_180621.RData"))
 
 library(tidyverse)
+library(lme4)
+
+theme_set(theme_bw())
 
 data_pth <- here::here("data", "results", "categ") 
 
@@ -52,7 +55,7 @@ df <- df %>%
 
 # Desc stat
 
-```{r}
+```{r desc stat}
 df %>% 
   group_by(quintile) %>% 
   summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2))
@@ -84,7 +87,10 @@ df %>% ggplot(aes(x = quintile, y = correct)) +
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
-  geom_hline(yintercept = 1/9)
+  geom_hline(yintercept = 1/9) +
+  ylab("Perc. correct") +
+  xlab("Quintile") + 
+  theme(text = element_text(size=14))
 
 df %>% ggplot(aes(x = quintile, y = correct)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
@@ -96,12 +102,12 @@ df %>% ggplot(aes(x = quintile, y = correct)) +
 
 ## Test
 
-```{r lmer}
+```{r lmer - quintiles}
 library(lme4)
 
 glm1 <- glmer(cbind(correct,1-correct) ~ quintile + (1|subject_id) + (1|category), df, family = binomial())
 glm1_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
-anova(glm1, glm_null)
+anova(glm1, glm1_null)
 
 ```
 
@@ -139,27 +145,25 @@ df %>% ggplot(aes(x = d_ratio, y = correct)) +
   stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
   ylim(0,1)+
   theme(aspect.ratio = 1) +
+  facet_wrap(~subject_id) +
   geom_hline(yintercept = 1/9) 
 
 ```
 
 ## Test
 
-```{r lmer}
-library(lme4)
+```{r lmer d_ratio}
+
 
 glm2 <- glmer(cbind(correct,1-correct) ~ d_ratio + (1|subject_id) + (1|category), df, family = binomial())
-glm_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
-anova(glm2, glm_null)
+glm2_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+anova(glm2, glm2_null)
 
 ```
 
 # Correlation between raters
 
 ```{r ICC}
-x <- df %>% select(prot_id, subject_id, correct) %>%
-  group_by(prot_id) %>%
-  summarize(ICC = psych::ICC(cbind()))
 cor(df$correct[df$subject_id == 1],df$correct[df$subject_id == 7])
 cor(df$correct[df$subject_id == 8],df$correct[df$subject_id == 100])
 cor(df$correct[df$subject_id == 3],df$correct[df$subject_id == 9])
