@@ -117,6 +117,12 @@ df %>% ggplot(aes(x = d_ratio, y = correct)) +
 
 ```
 
+### test
+
+```{r lmer}
+library(lme4)
+```
+
 ### Correlation between raters
 
 ```{r ICC}
