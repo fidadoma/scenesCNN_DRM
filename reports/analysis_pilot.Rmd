@@ -83,7 +83,7 @@ df %>%
 ## Visualize
 
 ```{r}
-df %>% ggplot(aes(x = quintile, y = correct)) + 
+p <- df %>% ggplot(aes(x = quintile, y = correct)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
@@ -91,6 +91,8 @@ df %>% ggplot(aes(x = quintile, y = correct)) +
   ylab("Perc. correct") +
   xlab("Quintile") + 
   theme(text = element_text(size=14))
+p
+ggsave(here::here("plots", "opam_figure.eps"), p, width = 6, height = 6)
 
 df %>% ggplot(aes(x = quintile, y = correct)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
