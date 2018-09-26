@@ -26,4 +26,6 @@ df_metrics <- read_csv(here::here("data", "metrics_pairwise.csv"), col_types = c
 
 df_metrics %>% select(fsim, fsimc, ssim, hog, gist, Clutter) %>%  cor()
 
-                                                                        rea
+saveRDS(df_metrics, here::here("data", "pairwise_metrics.rds"))
+
+                                                                      
