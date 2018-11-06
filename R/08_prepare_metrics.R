@@ -7,25 +7,25 @@ set.seed(167)
 library(tidyverse)
 
 
-df_metrics <- read_csv(here::here("data", "metrics_pairwise.csv"), col_types = cols(
-  group = col_integer(),
-  photo1 = col_integer(),
-  photo2 = col_integer(),
-  fsim = col_double(),
-  fsimc = col_double(),
+df_metrics <- read_csv(here::here("data", "pairwise_metrics_allprotocols.csv"), col_types = cols(
+  prot_id = col_integer(),
+  trial_id = col_integer(),
+  im1 = col_character(),
+  im2 = col_character(),
+  im1_id = col_integer(),
+  im2_id = col_integer(),
   ssim = col_double(),
   hog = col_double(),
   gist = col_double(),
-  `sum(matchmetric_sift)` = col_integer(),
-  `n(matches_sift)` = col_integer(),
-  `sum(matchmetric_surf)` = col_double(),
-  `n(matches_surf)` = col_integer(),
-  Clutter = col_double()
+  sift_sum = col_integer(),
+  sift_n = col_integer(),
+  surf_sum = col_double(),
+  surf_n = col_integer()
 ))
 
 
-df_metrics %>% select(fsim, fsimc, ssim, hog, gist, Clutter) %>%  cor()
+df_metrics %>% select(ssim, hog, gist, sift_sum) %>%  cor()
 
-saveRDS(df_metrics, here::here("data", "pairwise_metrics.rds"))
+saveRDS(df_metrics, here::here("data", "pairwise_metrics_181106.rds"))
 
                                                                       
