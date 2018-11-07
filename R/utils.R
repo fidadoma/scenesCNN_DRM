@@ -55,3 +55,26 @@ select_closest_points <- function(p, n_points) {
 select_random_point_from_quintile <- function(p, q, qs) {
    sample(p[p > qs[q] & p <= qs[q+1]],1)
 }
+
+
+order_all_outliers <- function(df1) {
+  df2 <- data_frame(prot_id = unique(df1$prot_id), trial_id=unique(df1$trial_id))
+  df2$ssim_order <- order_outliers(df1,"ssim")$rank.outliers %>% paste(collapse=" ")
+  df2$hog_order <- order_outliers(df1,"hog")$rank.outliers %>% paste(collapse=" ")
+  df2$gist_order <- order_outliers(df1,"gist")$rank.outliers %>% paste(collapse=" ")
+  df2$sift_sum <- order_outliers(df1,"sift_sum")$rank.outliers %>% paste(collapse=" ")
+  df2
+}
+
+order_outliers <- function(df1, v) {
+  df1$v <- df1[[v]]
+  gr1 <- df1 %>% select(im1,im2, v) %>% spread(im1,v) %>% select(-im2) %>% as.matrix() 
+  rownames(gr1) <- colnames(gr1)
+  DMwR::outliers.ranking(as.dist(gr1), clus=list(dist='euclidean',alg='hclust',meth = "ward.D"))
+  
+}
+
+get_top1 <- function(x) {
+  x %>% strsplit(split = " ") %>% unlist() %>% as.numeric() %>% which.max()
+  
+}
