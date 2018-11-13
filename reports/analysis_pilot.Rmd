@@ -49,7 +49,12 @@ df <- df %>%
   mutate(target_image = paste0("image",target_position),
          correct = as.numeric(target_image == mouse.clicked_name),
          category_type = if_else(category %in% c("desert", "waves", "coast", "underwater", "iceberg","field","garden","cavern","beach","canyon","mountainwhite","woods"),"natural","manmade"))
-  
+
+plots_dir <- here::here("plots")
+
+if(!dir.exists(plots_dir)) {
+  dir.create(plots_dir)
+}
 
 ```
 
@@ -89,10 +94,10 @@ p <- df %>% ggplot(aes(x = quintile, y = correct)) +
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
-  xlab("Quintile") + 
-  theme(text = element_text(size=14))
+  theme(text = element_text(size=18)) +
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4"))
 p
-ggsave(here::here("plots", "opam_figure.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "opam_figure.eps"), p, width = 6, height = 6)
 
 df %>% ggplot(aes(x = quintile, y = correct)) + 
   stat_summary(fun.data = "mean_cl_boot") + 

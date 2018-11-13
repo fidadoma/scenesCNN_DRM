@@ -8,6 +8,8 @@ df_metrics <- readRDS(here::here("data","pairwise_metrics_181106.rds"))
 library(tidyverse)
 library(lme4)
 
+source(here::here("R","utils.R"))
+
 theme_set(theme_bw())
 
 data_pth <- here::here("data", "results", "categ") 
@@ -93,13 +95,14 @@ df2 <- df %>% left_join(df_ordered_outliers2,  by = c("prot_id", "trial_id")) %>
 
 df3 <- df2 %>% gather(metric, value, correct, ssim_correct,hog_correct,gist_correct,sift_correct)
 
-df3 %>% ggplot(aes(x = quintile, y = value, col = metric)) + 
+p <- df3 %>% ggplot(aes(x = quintile, y = value, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
-  xlab("Quintile") + 
-  theme(text = element_text(size=14)) + scale_color_discrete(labels = c("Humans", "GIST", "HOG", "SIFT", "SSIM")) + 
-  stat_summary(fun.y=mean, geom="line")
-  
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
+  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("Humans", "GIST", "HOG", "SIFT", "SSIM")) + 
+  stat_summary(fun.y=mean, geom="line") +
+  theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
+ggsave(file.path("plots", "opam_figure_metrics.eps"), p, width = 6, height = 6)
