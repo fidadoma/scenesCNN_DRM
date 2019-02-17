@@ -6,6 +6,11 @@ l2norm <- function(M, v2) {
   apply(M, 1, function(v1) sqrt(sum((v1-v2)^2)))
 }
 
+select_images <- function(df_files, n_per_category) {
+  df_files %>% sample_n(n_per_category)
+}
+
+
 select_points_close_to_center <- function(df, cent, n_points = 9) {
   xc <- cent[1]
   yc <- cent[2]
