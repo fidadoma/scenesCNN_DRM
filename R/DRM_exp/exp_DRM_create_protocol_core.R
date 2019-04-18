@@ -175,4 +175,4 @@ p <- p[-1,]
 
 stopifnot(nrow(p) == length(categories)*n_rep_per_category*(n_close_distractors+n_far_distractors+n_targets_per_category))
 
-write_csv(p, path = file.path(prot_dir, "P001.csv"))
+write_csv(p, path = file.path(prot_dir, "P000.csv"))
