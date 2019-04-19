@@ -83,3 +83,7 @@ get_top1 <- function(x) {
   x %>% strsplit(split = " ") %>% unlist() %>% as.numeric() %>% which.max()
   
 }
+
+trial_id_with_gaps <- function(from = 1, to = 15, gapsize = 15, ngaps = 10) {
+  purrr::map(seq(0,ngaps - 1),function(x) ((to+gapsize)*x)+(from:to)) %>% unlist()
+}
