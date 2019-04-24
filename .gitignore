@@ -48,3 +48,6 @@ psychopy/protocols
 psychopy/*lastrun.py
 
 reports/*.html
+
+*.png
+*.jpg
