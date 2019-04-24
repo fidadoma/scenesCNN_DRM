@@ -21,4 +21,6 @@ df_figrim_fc7 <- m %>% as.tibble() %>% mutate(fname = img_names) %>% select(fnam
 load("data/file_info.RData")
 df_figrim_fc7 <- df_files %>% left_join(df_figrim_fc7,by = c("filename" = "fname"))
 
+# we removed some artefacts, therefore we need to filter those values
+df_figrim_fc7 <- df_figrim_fc7 %>% filter(!is.na(V1))
 save(df_figrim_fc7, file = "data/figrim_vectors.RData")

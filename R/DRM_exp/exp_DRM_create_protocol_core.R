@@ -10,6 +10,10 @@ source(here::here("R","utils.R"))
 load(here::here("data","file_info.RData"))
 load(here::here("data","figrim_vectors.RData"))
 
+# we are using cleaned database, we need to clean the figrim data structure as well
+
+df_files <- df_files %>% filter(filename %in% df_figrim_fc7$filename)
+
 prot_dir <- here::here("data","exp_DRM1","protocols")
 
 if(!dir.exists(prot_dir)) {

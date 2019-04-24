@@ -8,18 +8,20 @@ source(here::here("R","utils.R"))
 
 prot_dir <- here::here("data","exp_DRM1","protocols")
 
-stopifnot(!dir.exists(prot_dir)) 
+stopifnot(dir.exists(prot_dir)) 
 
 p0 <- read_csv(file.path(prot_dir, "P000.csv"))
-p0_order <- p0 %>% 
-  select(category, id_rep) %>% 
-  distinct() %>% 
-  sample_frac(1) %>% 
-  mutate(grp_order = 1:n())
+
+p0 <- p0 %>% mutate(category = str_replace(category, "_", " "))
 
 nProt <- 20
 
 for (i in 1:nProt) {
+  p0_order <- p0 %>% 
+    select(category, id_rep) %>% 
+    distinct() %>% 
+    sample_frac(1) %>% 
+    mutate(grp_order = 1:n())
   
   p_pres <- p0 %>% 
     filter(type == "target") %>% 
@@ -57,6 +59,9 @@ for (i in 1:nProt) {
   p <- rbind(p_pres,p_q) %>% arrange(trial_id)
   p <- p %>% 
     mutate(prot_id = i) %>% 
+    mutate(corrKey = if_else(query == 1,
+                             if_else(type == "target", "left", "right"),
+                             NA_character_)) %>% 
     select(prot_id, trial_id, grp_order, everything())
   write_csv(p, path = file.path(prot_dir, sprintf("P%03d.csv",i)))
   
