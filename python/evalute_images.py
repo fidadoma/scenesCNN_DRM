@@ -15,7 +15,7 @@ import caffe
 caffe.set_device(0) 
 caffe.set_mode_gpu() 
 
-fdir = 'd:/Documents/figrim2' # images directory
+fdir = 'd:/Documents/figrim2_clean' # images directory, only clean version
 model_dir = "models/places365/" # model path
 
 out_dir = 'd:/Documents/git/scenesCNN_DRM/data/figrim_vectors'
