@@ -1,0 +1,168 @@
+---
+title: "Analysis"
+author: "Filip Dechterenko"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: html_document
+---
+
+```{r}
+set.seed(190425)
+library(tidyverse)
+theme_set(theme_bw())
+library(lme4)
+```
+
+# Load data
+
+```{r load data, warning=FALSE, message=FALSE}
+
+df <- readRDS(here::here("data/exp_DRM1/results_190425.rds"))
+
+plots_dir <- here::here("plots")
+
+if(!dir.exists(plots_dir)) {
+  dir.create(plots_dir)
+}
+
+df_acc <- df %>% filter(!is.na(correct))
+```
+
+# Desc stat
+
+```{r desc stat}
+df_acc %>% 
+  group_by(type) %>% 
+  summarize(m = mean(correct), sd = sd(correct)) %>% 
+  knitr::kable(digits = 2)
+
+df_acc %>% 
+  group_by(subject_id, type) %>% 
+  summarize(correct = mean(correct)) %>% 
+  ggplot(aes(x = type, y = correct)) +
+  stat_summary(fun.data = "mean_cl_boot") +
+  ylim(0,1) + theme(aspect.ratio = 1)
+
+
+
+df_acc %>% 
+  group_by(subject_id, type) %>% 
+  summarize(correct = mean(correct)) %>% 
+  ggplot(aes(x = type, y = correct)) +
+  geom_point() +
+  ylim(0,1) + theme(aspect.ratio = 1) +
+  facet_grid(~subject_id)  
+
+df %>% group_by(subject_id) %>% 
+  summarize(correct = mean(correct),
+            zH = qno)
+
+df %>% 
+  group_by(category) %>% 
+  summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2), n= n()) %>% 
+  arrange(-m)
+
+df %>% 
+  group_by(category,quintile) %>% 
+  summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2), n= n()) %>% 
+  arrange(category,-m)
+
+
+  
+```
+
+# Quintiles
+
+## Visualize
+
+```{r}
+p <- df %>% ggplot(aes(x = quintile, y = correct)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) +
+  ylab("Perc. correct") +
+  theme(text = element_text(size=18)) +
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4"))
+p
+ggsave(file.path(plots_dir, "opam_figure.eps"), p, width = 6, height = 6)
+
+df %>% ggplot(aes(x = quintile, y = correct)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  facet_wrap(~subject_id) +
+  geom_hline(yintercept = 1/9) 
+```
+
+## Test
+
+```{r lmer - quintiles}
+library(lme4)
+
+glm1 <- glmer(cbind(correct,1-correct) ~ quintile + (1|subject_id) + (1|category), df, family = binomial())
+glm1_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+anova(glm1, glm1_null)
+
+```
+
+# Express the distances as ratio
+
+We are now sampling from the quintiles, we express the distances as ratio of average within group distance and between group distance
+
+```{r}
+n <- nrow(df)
+fc7_names <- colnames(fc7)
+df$d_ratio <- NA_real_ 
+for (i in 1:n) {
+  target_image <- df[[paste0("im",df$target_position[i])]][i]
+  center_image <- df$selected_image[i]
+  rest_images  <- df[i,paste0("im", setdiff(1:9,df$target_position[i]))] %>% as.matrix() %>% c()
+  d_rest <- fc7[center_image == fc7_names, fc7_names %in% rest_images]
+  df$d_ratio[i] <- fc7[center_image == fc7_names, target_image == fc7_names] / mean(d_rest[d_rest>0])
+    
+}
+
+```
+
+## Visualize
+
+```{r}
+df %>% ggplot(aes(x = d_ratio, y = correct)) + 
+  geom_point() +
+  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) 
+
+df %>% ggplot(aes(x = d_ratio, y = correct)) + 
+  geom_point() +
+  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  facet_wrap(~subject_id) +
+  geom_hline(yintercept = 1/9) 
+
+```
+
+## Test
+
+```{r lmer d_ratio}
+
+
+glm2 <- glmer(cbind(correct,1-correct) ~ d_ratio + (1|subject_id) + (1|category), df, family = binomial())
+glm2_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+anova(glm2, glm2_null)
+
+```
+
+# Correlation between raters
+
+```{r ICC}
+cor(df$correct[df$subject_id == 1],df$correct[df$subject_id == 7])
+cor(df$correct[df$subject_id == 8],df$correct[df$subject_id == 100])
+cor(df$correct[df$subject_id == 3],df$correct[df$subject_id == 9])
+cor(df$correct[df$subject_id == 4],df$correct[df$subject_id == 10])
+cor(df$correct[df$subject_id == 5],df$correct[df$subject_id == 11])
+cor(df$correct[df$subject_id == 6],df$correct[df$subject_id == 12])
+
+```
