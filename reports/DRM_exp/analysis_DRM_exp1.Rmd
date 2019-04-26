@@ -84,13 +84,13 @@ p_dprimes
 split the analysis for first half and second half. 
 
 ```{r}
-trial_ids <- df_acc %>% 
+trial_ids <- df %>% 
   filter(subject_id == 1) %>% 
   pull(trial_id)
 
 cutoff_trial <- trial_ids[round(length(trial_ids)/15/2)*15]
 
-df_acc2 <- df_acc %>% mutate(part = if_else(trial_id<=cutoff_trial, "part1", "part2"))
+df_acc2 <- df %>% mutate(part = if_else(trial_id<=cutoff_trial, "part1", "part2"))
 
 df_acc2 %>% 
   group_by(type,part) %>% 
@@ -105,6 +105,21 @@ df_acc2 %>%
   stat_summary(fun.y = "mean", geom = "line") +
   ylim(0,1) + theme(aspect.ratio = 1)
 
+```
+
+```{r two dprimes and bias}
+df_dprime2 <- df %>% 
+  group_by(subject_id) %>% 
+  summarize(H = sum(key_resp == "old" & corrKey == "old")/(sum(corrKey == "old")),
+            FA_close = sum(key_resp == "old" & corrKey == "new" & type == "close distractor")/(sum(corrKey == "new" & type == "close distractor")),
+            FA_far = sum(key_resp == "old" & corrKey == "new" & type == "far distractor")/(sum(corrKey == "new" & type == "far distractor"))) %>% 
+  mutate(d_oldclose = qnorm(H) - qnorm(FA_close),
+         d_oldfar = qnorm(H) - qnorm(FA_far),
+         c_oldclose = -0.5*(qnorm(H) + qnorm(FA_close)),
+         c_oldfar = -0.5*(qnorm(H) + qnorm(FA_far)))
+t.test(df_dprime2$d_oldclose, df_dprime2$d_oldfar)
+t.test(df_dprime2$c_oldclose, df_dprime2$c_oldfar)  
+colMeans(df_dprime2)
 ```
 
 ```{r use rating to compute ROC}
@@ -147,4 +162,26 @@ zHFA %>% ggplot(aes(x = FA, y = H)) +
   xlim(-2.5,2.5) + 
   ylim(-2.5,2.5) + 
   geom_segment(x = -2, y = -2, xend = 2,yend = 2)
+```
+
+# Memorability
+
+Memorability were computed using pretrained CNN
+
+```{r load mem data}
+mem_imgnames <- read_csv(here::here("data/exp_DRM1/memorability/memorability_imgnames.txt"), col_names = F)
+mem_values <- read_csv(here::here("data/exp_DRM1/memorability/memorability_all.txt"), col_names = F)
+
+df_mem <- tibble(img_name = mem_imgnames$X1, mem_score = mem_values$X1)
+dfm <- df %>% left_join(df_mem,by = "img_name")
+
+cor.test(~correct+mem_score, dfm %>% filter(type == "target"))
+cor.test(~correct+mem_score, dfm %>% filter(type == "close distractor"))
+cor.test(~correct+mem_score, dfm %>% filter(type == "far distractor"))
+```
+
+# Per image accuracy
+
+```{r }
+df %>% group_by(img_name,type) %>% summarize(m = mean(correct), sd = sd(correct)) %>% arrange(-m)
 ```
