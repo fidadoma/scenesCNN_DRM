@@ -5,57 +5,48 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 output: html_document
 ---
 
+# Load libraries
+
+```{r load libraries, warning=FALSE,message=FALSE}
+set.seed(167)
+library(tidyverse); theme_set(theme_classic(24))
+library(lme4)
+
+library(here)
+
+
+```
+
 # Analysis categ
+
+First analyze data when computations were done wihtin a category
 
 ## Load data
 
 ```{r load data, warning=FALSE, message=FALSE}
-set.seed(167)
-load(here::here("data","konkle_180621.RData"))
 
-library(tidyverse)
-library(lme4)
+load(here("data","konkle_180621.RData"))
 
-theme_set(theme_bw())
+df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
-data_pth <- here::here("data", "results", "categ") 
+participants <- readxl::read_excel("data/oddoneout/oddoneout_participants.xlsx")
+```
 
-col_types <- cols(
-  .default = col_character(),
-  prot_id = col_integer(),
-  trial_id = col_integer(),
-  target_position = col_integer(),
-  quintile = col_integer(),
-  trials.thisRepN = col_integer(),
-  trials.thisTrialN = col_integer(),
-  trials.thisN = col_integer(),
-  trials.thisIndex = col_integer(),
-  mouse.x = col_double(),
-  mouse.y = col_double(),
-  mouse.leftButton = col_integer(),
-  mouse.midButton = col_integer(),
-  mouse.rightButton = col_integer(),
-  protocol_id = col_integer(),
-  subject_id = col_integer(),
-  frameRate = col_double()
-)
-
-df <- data_pth %>% 
-  dir(pattern = "*.csv", full.names = T) %>% 
-  purrr::map(read_csv, col_types = col_types) %>% 
-  bind_rows() 
-
-df <- df %>%
-  mutate(target_image = paste0("image",target_position),
-         correct = as.numeric(target_image == mouse.clicked_name),
-         category_type = if_else(category %in% c("desert", "waves", "coast", "underwater", "iceberg","field","garden","cavern","beach","canyon","mountainwhite","woods"),"natural","manmade"))
-
+```{create plot dir}
 plots_dir <- here::here("plots")
 
 if(!dir.exists(plots_dir)) {
   dir.create(plots_dir)
 }
 
+```
+
+# Describe the participants 
+
+```{r describe participants}
+participants %>% 
+  summarize(m_age = mean(age),sd_age = sd(age), n_males = sum(gender == "M")) %>% 
+  knitr::kable(digits = 2)
 ```
 
 # Desc stat
