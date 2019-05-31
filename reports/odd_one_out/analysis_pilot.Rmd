@@ -1,7 +1,7 @@
 ---
-title: "Analysis"
+title: "Analysis of Odd one out experiment"
 author: "Filip Dechterenko"
-date: "25 června 2018"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
 output: html_document
 ---
 
