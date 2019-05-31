@@ -1,6 +1,6 @@
 # This script should be run after the data collection. 
 
-data_pth <- here::here("data", "results", "categ") 
+data_pth <- here::here("data", "oddoneout", "results_categ") 
 out_pth <- here::here("data","oddoneout")
 
 if(!dir.exists(out_pth)) {
