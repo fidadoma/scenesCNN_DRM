@@ -1,5 +1,10 @@
 # This script should be run after the data collection. 
 
+library(tidyverse)
+library(purrr)
+
+source(here::here("utils.R"))
+
 data_pth <- here::here("data", "oddoneout", "results_categ") 
 out_pth <- here::here("data","oddoneout")
 
@@ -39,3 +44,15 @@ df <- data_pth %>%
          category_type = if_else(category %in% c("desert", "waves", "coast", "underwater", "iceberg","field","garden","cavern","beach","canyon","mountainwhite","woods"),"natural","manmade"))
 
 saveRDS(df, file.path(out_pth,"results_190531.rds"))
+
+# get duration of the experiment
+
+
+
+x<-data_pth %>% 
+  dir(pattern = "*.log", full.names = T) %>% 
+  purrr::map(read_file) %>% 
+  purrr::map(get_dur) 
+
+x
+

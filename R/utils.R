@@ -29,11 +29,11 @@ select_points_farthest_from_centerL2 <- function(df, cent, n_points = 1) {
 create_empty_protocol <- function(prot_id, n_images = 9, n_categories = 64, n_quintiles = 3) {
   n_trials <- n_categories
   
-  new_cols <- data_frame(c = paste0("im", 1:9), v = "") %>% 
+  new_cols <- tibble(c = paste0("im", 1:9), v = "") %>% 
     spread(c,v) %>% 
     slice(rep(1:n(), each = n_trials))
   
-  p <- data_frame(prot_id = rep(prot_id, n_trials),
+  p <- tibble(prot_id = rep(prot_id, n_trials),
                   trial_id = 1:n_trials, 
                   category = "",
                   target_position = sample(n_images,n_trials,replace=T),
