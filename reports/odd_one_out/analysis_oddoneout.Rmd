@@ -29,14 +29,14 @@ load(here("data","konkle_180621.RData"))
 
 df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
-participants <- readxl::read_excel("data/oddoneout/oddoneout_participants.xlsx")
+participants <- readxl::read_excel(here("data","oddoneout","oddoneout_participants.xlsx"))
 ```
 
-```{create plot dir}
-plots_dir <- here::here("plots")
+```{r create plot dir}
+plots_dir <- here::here("plots", "oddoneout")
 
 if(!dir.exists(plots_dir)) {
-  dir.create(plots_dir)
+  dir.create(plots_dir, recursive = T)
 }
 
 ```
@@ -75,6 +75,40 @@ df %>%
 ```
 
 # Quintiles
+
+## Histogram
+
+```{r}
+
+this_cat <- df %>% filter(subject_id == 1, trial_id == 1) %>% pull(category)
+this_center <- df %>% filter(subject_id == 1, trial_id == 1) %>% pull(selected_image)
+
+df_onecat_distances <- fc7[fc7_names == this_center, str_starts(fc7_names, this_cat)] %>% enframe() %>% rename(distance = value) 
+
+qs <- compute_quintiles(df_onecat_distances$distance) 
+df_onecat_distances <- df_onecat_distances %>% 
+  mutate(quintile = case_when(
+    distance<qs[2] ~ 1,
+    distance >= qs[2] & distance < qs[3] ~ 2,
+    distance >= qs[3] & distance < qs[4] ~ 3,
+    distance >= qs[4] & distance < qs[5] ~ 4,
+    TRUE ~ 5
+  ) %>% as.factor())
+
+df_segments <- tibble(x = qs[2:6], xend = x, y = 0, yend = 17)
+
+p <- df_onecat_distances %>% 
+  ggplot(aes(x = distance)) + 
+  geom_histogram(bins = 30) + 
+  theme(aspect.ratio = 1) +
+  geom_segment(data = df_segments, aes(x=x,xend=xend,y=y,yend=yend)) +
+  annotate(x = qs[3:5]-c(3,1,0), y = c(19,19,19), label = c("2.","3.","4."), geom = "label") +
+  ggtitle(sprintf("Kategorie: %s",this_cat)) +
+  xlab("Vzdálenost") +
+  ylab("Počet")
+p  
+ggsave(file.path(plots_dir, "Fig_distance_histogram.eps"), p, width = 6, height = 6)  
+```
 
 ## Visualize
 
