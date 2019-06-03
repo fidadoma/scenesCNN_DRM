@@ -40,7 +40,7 @@ create_empty_protocol <- function(prot_id, n_images = 9, n_categories = 64, n_qu
                   selected_image = "",
                   quintile = rep(2:4, length.out = n_trials)) %>% 
     cbind(new_cols) %>% 
-    as_data_frame()
+    as_tibble()
   p
 }
 
