@@ -9,10 +9,10 @@ library(FDhelpers)
 
 source(here::here("R", "utils.R"))
 
-outdir <- here::here("data","protocols")
+outdir <- here::here("data","oddoneout","protocols")
 
 if(!dir.exists(outdir)) {
-  dir.create(outdir)
+  dir.create(outdir,recursive = T)
 }
 
 load(here::here("data","konkle_180621.RData"))
