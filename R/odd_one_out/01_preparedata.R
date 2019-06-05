@@ -45,14 +45,7 @@ df <- data_pth %>%
 
 saveRDS(df, file.path(out_pth,"results_190531.rds"))
 
-# get duration of the experiment
 
 
 
-x<-data_pth %>% 
-  dir(pattern = "*.log", full.names = T) %>% 
-  purrr::map(read_file) %>% 
-  purrr::map(get_dur) 
-
-x
 

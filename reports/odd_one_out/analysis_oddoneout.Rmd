@@ -33,7 +33,7 @@ participants <- readxl::read_excel(here("data","oddoneout","oddoneout_participan
 ```
 
 ```{r create plot dir}
-plots_dir <- here::here("plots", "oddoneout")
+plots_dir <- here("plots", "oddoneout")
 
 if(!dir.exists(plots_dir)) {
   dir.create(plots_dir, recursive = T)
@@ -48,6 +48,21 @@ participants %>%
   summarize(m_age = mean(age),sd_age = sd(age), n_males = sum(gender == "M")) %>% 
   knitr::kable(digits = 2)
 ```
+
+# Duration of the exp
+
+```{r duration of the exp}
+data_pth <- here("data", "oddoneout", "results_categ") 
+
+exp_duration <- data_pth %>% 
+  dir(pattern = "*.log", full.names = T) %>% 
+  purrr::map(read_file) %>% 
+  purrr::map_dbl(get_dur) 
+
+
+```
+
+Average experiment duration: `r (exp_duration / 60) %>% mean() %>% round(2)`, SD = `r (exp_duration / 60) %>% sd() %>% round(2)`
 
 # Desc stat
 
@@ -137,8 +152,8 @@ df %>% ggplot(aes(x = quintile, y = correct)) +
 ```{r lmer - quintiles}
 library(lme4)
 
-glm1 <- glmer(cbind(correct,1-correct) ~ quintile + (1|subject_id) + (1|category), df, family = binomial())
-glm1_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+glm1 <- glmer(correct ~ quintile + (1+quintile|subject_id) + (1+quintile|category), df, family = binomial())
+glm1_null <- glmer(correct ~ (1+quintile|subject_id) + (1+quintile|category), df, family = binomial())
 anova(glm1, glm1_null)
 
 ```
@@ -187,8 +202,8 @@ df %>% ggplot(aes(x = d_ratio, y = correct)) +
 ```{r lmer d_ratio}
 
 
-glm2 <- glmer(cbind(correct,1-correct) ~ d_ratio + (1|subject_id) + (1|category), df, family = binomial())
-glm2_null <- glmer(cbind(correct,1-correct) ~ (1|subject_id) + (1|category), df, family = binomial())
+glm2 <- glmer(correct ~ d_ratio + (1+d_ratio|subject_id) + (1+d_ratio|category), df, family = binomial())
+glm2_null <- glmer(correct ~ (1+d_ratio|subject_id) + (1+d_ratio|category), df, family = binomial())
 anova(glm2, glm2_null)
 
 ```
