@@ -135,29 +135,40 @@ p <- df %>% ggplot(aes(x = quintile, y = correct)) +
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
   theme(text = element_text(size=18)) +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4"))
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) + 
+  ylab("Správnost odpovědí") + xlab("Kvintil")
 p
-ggsave(file.path(plots_dir, "opam_figure.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_.eps"), p, width = 6, height = 6)
 
 df %>% ggplot(aes(x = quintile, y = correct)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
-  facet_wrap(~subject_id) +
-  geom_hline(yintercept = 1/9) 
+  geom_hline(yintercept = 1/9) +
+  ylab("Perc. correct") +
+  theme(text = element_text(size=18)) +
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) + 
+  ylab("Správnost odpovědí") + xlab("Kvintil") +
+  facet_wrap(~subject_id)
+  
 ```
 
 ## Test
 
 ```{r lmer - quintiles}
-library(lme4)
-
-glm1 <- glmer(correct ~ quintile + (1+quintile|subject_id) + (1+quintile|category), df, family = binomial())
-glm1_null <- glmer(correct ~ (1+quintile|subject_id) + (1+quintile|category), df, family = binomial())
+glm1 <- glmer(correct ~ quintile + (1|subject_id) + (1|category), df, family = binomial())
+glm1_null <- glmer(correct ~ (1|subject_id) + (1|category), df, family = binomial())
 anova(glm1, glm1_null)
 
 ```
 
+```{r}
+df_for_onettest <- df %>% group_by(subject_id,quintile) %>% summarize(correct = mean(correct))
+df_for_onettest %>% group_by(quintile) %>% do(t.test(.$correct, mu = 1/9) %>% broom::tidy())
+df_for_onettest %>% group_by(quintile) %>% do(d=lsr::cohensD(.$correct, mu = 1/9)) %>% mutate(d = unlist(d))
+
+
+```
 # Express the distances as ratio
 
 We are now sampling from the quintiles, we express the distances as ratio of average within group distance and between group distance
