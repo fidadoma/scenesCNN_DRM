@@ -11,7 +11,7 @@ output: html_document
 set.seed(167)
 library(tidyverse); theme_set(theme_classic(24))
 library(lme4)
-
+library(MuMIn)
 library(here)
 
 
@@ -68,6 +68,8 @@ Average experiment duration: `r (exp_duration / 60) %>% mean() %>% round(2)`, SD
 
 ```{r desc stat}
 df %>% 
+  group_by(subject_id, quintile) %>% 
+  summarize(correct = mean(correct)) %>% 
   group_by(quintile) %>% 
   summarize(m = mean(correct) %>% round(2), sd = sd(correct) %>% round(2))
 
@@ -128,29 +130,66 @@ ggsave(file.path(plots_dir, "Fig_distance_histogram.eps"), p, width = 6, height 
 ## Visualize
 
 ```{r}
-p <- df %>% ggplot(aes(x = quintile, y = correct)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
+p <- df %>%
+  group_by(subject_id, quintile) %>% 
+  summarize(correct = mean(correct)) %>% 
+  mutate(quintile = as.factor(quintile)) %>% 
+  ggplot(aes(x = quintile, y = correct)) + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
-  theme(text = element_text(size=18)) +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) + 
-  ylab("Správnost odpovědí") + xlab("Kvintil")
-p
-ggsave(file.path(plots_dir, "Fig_chp3_.eps"), p, width = 6, height = 6)
-
-df %>% ggplot(aes(x = quintile, y = correct)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
-  ylim(0,1)+
-  theme(aspect.ratio = 1) +
-  geom_hline(yintercept = 1/9) +
-  ylab("Perc. correct") +
-  theme(text = element_text(size=18)) +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) + 
-  ylab("Správnost odpovědí") + xlab("Kvintil") +
-  facet_wrap(~subject_id)
   
+  #scale_x_continuous("Kvintil", breaks = c(2,3,4), labels = c("2","3","4")) + 
+  geom_violin(trim = F)+
+  stat_summary(fun.data = "mean_cl_boot") + 
+  xlab("Kvintil") + 
+  ylab("Správnost")
+  
+p
+ggsave(file.path(plots_dir, "Fig_chp3_results.eps"), p, width = 6, height = 6)
+
+p <- df %>%
+  mutate(quintile = as.factor(quintile)) %>% 
+  ggplot(aes(x = quintile, y = correct)) + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) +
+  ylab("Perc. correct") +
+  
+  #scale_x_continuous("Kvintil", breaks = c(2,3,4), labels = c("2","3","4")) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  xlab("Quintile") + 
+  facet_wrap(~subject_id, ncol = 4)
+  
+p
+ggsave(file.path(plots_dir, "Fig_chp3_results_participants.eps"), p, width = 6, height = 6)
+  
+```
+
+## Visualize categories
+
+```{r}
+order_category <- 
+  df %>%
+  group_by(category,category_type) %>% 
+  do(Hmisc::smean.cl.boot(.$correct) %>% t() %>% as_tibble()) %>% 
+  arrange(Mean) %>% 
+  ungroup() %>% 
+  mutate(category = forcats::as_factor(category), rank = 1:n())
+
+p_ordercat <- order_category %>%
+  ggplot(aes(x = category, xend = category, y = Lower, yend = Upper, group = 1, col = category_type)) +
+  geom_segment(size = 1.2) +
+  geom_point(aes(y=Mean), size = 3) + 
+  theme(aspect.ratio = 0.2) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 16)) + 
+  theme(legend.position = "top") + 
+  xlab("Category") + 
+  ylab("Accuracy") + 
+  scale_color_discrete("Category type", labels = c("Man-made","Natural")) 
+p_ordercat
+ggsave(file.path(plots_dir, "Fig_chp3_ordercat.eps"), p_ordercat, width = 18, height = 6)
 ```
 
 ## Test
@@ -164,8 +203,9 @@ anova(glm1, glm1_null)
 
 ```{r}
 df_for_onettest <- df %>% group_by(subject_id,quintile) %>% summarize(correct = mean(correct))
-df_for_onettest %>% group_by(quintile) %>% do(t.test(.$correct, mu = 1/9) %>% broom::tidy())
-df_for_onettest %>% group_by(quintile) %>% do(d=lsr::cohensD(.$correct, mu = 1/9)) %>% mutate(d = unlist(d))
+df_for_onettest %>% group_by(quintile) %>% do(t.test(.$correct, mu = 1/9) %>% broom::tidy()) %>% 
+  left_join(df_for_onettest %>% group_by(quintile) %>% do(d=lsr::cohensD(.$correct, mu = 1/9)) %>% mutate(d = unlist(d)),
+            by = "quintile")
 
 
 ```
@@ -188,35 +228,88 @@ for (i in 1:n) {
 
 ```
 
-## Visualize
-
-```{r}
-df %>% ggplot(aes(x = d_ratio, y = correct)) + 
-  geom_point() +
-  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
-  ylim(0,1)+
-  theme(aspect.ratio = 1) +
-  geom_hline(yintercept = 1/9) 
-
-df %>% ggplot(aes(x = d_ratio, y = correct)) + 
-  geom_point() +
-  stat_smooth(method="glm", method.args = list(family = "binomial"), se=F) +
-  ylim(0,1)+
-  theme(aspect.ratio = 1) +
-  facet_wrap(~subject_id) +
-  geom_hline(yintercept = 1/9) 
-
-```
 
 ## Test
 
 ```{r lmer d_ratio}
 
 
-glm2 <- glmer(correct ~ d_ratio + (1+d_ratio|subject_id) + (1+d_ratio|category), df, family = binomial())
-glm2_null <- glmer(correct ~ (1+d_ratio|subject_id) + (1+d_ratio|category), df, family = binomial())
+glm2 <- glmer(correct ~ d_ratio + (1|subject_id) + (1|category), df, family = binomial(),  na.action = "na.fail")
+glm2_null <- glmer(correct ~ (1|subject_id) + (1|category), df, family = binomial())
 anova(glm2, glm2_null)
 
+
+  
+```
+
+### Visualize glmer
+
+```{r}
+dredge.models<-dredge(glm2,trace=FALSE,rank="AICc")
+my.dredge.models<-get.models(dredge.models,subset = T)
+silly<-model.avg(my.dredge.models,subset=delta<10)
+predict(silly,type="response")
+
+p0 <- df %>% ggplot(aes(x = d_ratio, y =correct))+
+    geom_point(alpha=0.5)
+
+predframe <- tibble(d_ratio= df$d_ratio)
+
+predframe$correct <- predict(glm2,newdata=predframe,type="response",re.form=NA)
+p <- p0 + geom_point(data=predframe,colour="red")+
+  geom_line(data=predframe,colour="red",aes(group=1)) + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) +
+  xlab("Poměr vzdáleností") + 
+  ylab("Správnost")
+
+p
+ggsave(file.path(plots_dir, "Fig_chp3_results_ratio.eps"), p, width = 6, height = 6)
+  
+```
+
+## Visualize top and bottom category
+
+```{r top and bottom}
+set.seed(190610)
+onecat_plot <- function(cat_name) {
+  df_thiscat <- df %>% filter(category == cat_name)
+  
+  img_names <- df_thiscat %>% select(im1:im9) %>% gather() %>% pull(value) %>% unique()  
+  mds_df <- cmdscale(fc7[fc7_names %in% img_names, fc7_names %in% img_names]) %>% as.data.frame() %>% rownames_to_column()
+  
+  
+  
+  df1 <- df_thiscat %>% filter(quintile == 4) %>% sample_n(1)
+  
+  target_image <- df1[[paste0("im",df1$target_position)]]   
+  center_image <- df1$selected_image
+  rest_images  <- df1[,paste0("im", setdiff(1:9,df1$target_position))] %>% as.matrix() %>% c()
+  
+  df_layerdata <- df1 %>% select(im1:im9) %>% gather() %>% rename(img_name = value)
+  df_layerdata <- df_layerdata %>% 
+    mutate(type = if_else(img_name == target_image,"target",
+                          if_else(img_name == center_image, "center", "distractors"))) %>% left_join(mds_df, by = c("img_name"="rowname"))
+  
+  p <- ggplot(mds_df, aes(x = V1, y = V2), size = 2) + geom_point() +
+    geom_point(data = df_layerdata, aes(x = V1, y = V2, col = type), size = 2) + 
+    
+    theme(aspect.ratio = 1) + 
+    xlab("MDS 1") + ylab("MDS 2") + 
+    ggtitle(sprintf("Category: %s", cat_name)) +
+    scale_color_manual(values = c("green","blue","red"))
+  p
+}
+bottom_one <- order_category %>% filter(rank == 1)
+top_one <- order_category %>% filter(rank == 64)
+fc7_names <- colnames(fc7)
+
+
+p1 <- onecat_plot(bottom_one$category[1])
+p2 <- onecat_plot(top_one$category[1])
+ggsave(file.path(plots_dir, "Fig_chp3_category_closet.eps"), p1, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_category_field.eps"), p2, width = 6, height = 6)
 ```
 
 # Correlation between raters
