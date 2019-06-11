@@ -29,7 +29,11 @@ load(here("data","konkle_180621.RData"))
 
 df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
+df <- df %>% anti_join(wrong_trials, by = c("prot_id_version"="prot_id","trial_id"))
+
 participants <- readxl::read_excel(here("data","oddoneout","oddoneout_participants.xlsx"))
+
+metrics <- readRDS(file = here("data", "oddoneout", "metrics_190611.rds"))
 ```
 
 ```{r create plot dir}
@@ -321,5 +325,26 @@ cor(df$correct[df$subject_id == 3],df$correct[df$subject_id == 9])
 cor(df$correct[df$subject_id == 4],df$correct[df$subject_id == 10])
 cor(df$correct[df$subject_id == 5],df$correct[df$subject_id == 11])
 cor(df$correct[df$subject_id == 6],df$correct[df$subject_id == 12])
+
+```
+
+## Metrics
+
+```{r}
+p <- metrics %>% 
+  filter(metric!= "ssim_correct") %>% 
+  ggplot(aes(x = quintile, y = value, col = metric, group = metric)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) +
+  ylab("Perc. correct") +
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
+  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT")) + 
+  stat_summary(fun.y=mean, geom="line") +
+  theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
+p
+ggsave(file.path(plots_dir, "Fig_chp3_metrics.eps"), p, width = 6, height = 6)
+
 
 ```

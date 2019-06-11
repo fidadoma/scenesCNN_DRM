@@ -68,6 +68,7 @@ order_all_outliers <- function(df1) {
   df2$hog_order <- order_outliers(df1,"hog")$rank.outliers %>% paste(collapse=" ")
   df2$gist_order <- order_outliers(df1,"gist")$rank.outliers %>% paste(collapse=" ")
   df2$sift_sum <- order_outliers(df1,"sift_sum")$rank.outliers %>% paste(collapse=" ")
+  df2$pdistRGB <- order_outliers(df1,"pdistRGB")$rank.outliers %>% paste(collapse=" ")
   df2
 }
 

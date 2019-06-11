@@ -1,18 +1,21 @@
 rm(list = ls())
 
+
+
 set.seed(167)
 
-load(here::here("data","konkle_180621.RData"))
-df_metrics <- readRDS(here::here("data","pairwise_metrics_181106.rds"))
 
 library(tidyverse)
 library(lme4)
+library(here)
 
-source(here::here("R","utils.R"))
+source(here("R","utils.R"))
 
-theme_set(theme_bw())
+load(here("data","konkle_180621.RData"))
+df_metrics <- readRDS(here("data","pairwise_metrics_190611.rds"))
 
-data_pth <- here::here("data", "results", "categ") 
+
+data_pth <- here("data", "oddoneout","results_categ") 
 
 col_types <- cols(
   .default = col_character(),
@@ -46,29 +49,6 @@ df <- df %>%
 
 df_metrics_full <- rbind(df_metrics, (df_metrics %>% mutate(tmp = im1, im1 = im2, tmp_id= im1_id, im1_id = im2_id) %>% mutate(im2 = tmp, im2_id = tmp_id) %>% select(-tmp, -tmp_id)))
 
-library(dendextend)
-
-df_metrics_full
-
-gr1 <- df_metrics_full %>% filter(prot_id == 1, trial_id == 1) %>% select(im1,im2,ssim) %>% spread(im1,ssim) %>% select(-im2) %>% as.matrix() 
-rownames(gr1) <- colnames(gr1)
-
-x <- DMwR::outliers.ranking(as.dist(gr1))
-x$rank.outliers
-for (i in nrow(gr1)) {
-  gr_noi <- gr1[-i,-i]
-  as.dist(gr_noi) %>% pam
-}
-
-cl1 <- as.dist(cl1) %>% hclust(method = "ward.D")
-
-plot(cl1)
-
-dd <- as.dendrogram(cl1)
-
-h <- get_nodes_attr(dd, "height")
-rank(h[h>0])
-
 
 wrong_trials <- df_metrics_full %>% group_by(prot_id, trial_id) %>% summarize(n = length(unique(im1))) %>% filter(n<9) %>% select(-n)
 
@@ -84,25 +64,17 @@ df_ordered_outliers2 <-
   mutate(ssim_top1 = get_top1(ssim_order),
          hog_top1 = get_top1(hog_order),
          gist_top1 = get_top1(gist_order),
-         sift_top1 = get_top1(sift_sum)) %>% 
+         sift_top1 = get_top1(sift_sum),
+         pdistRGB_top1 = get_top1(pdistRGB)) %>% 
   ungroup()
          
 df2 <- df %>% left_join(df_ordered_outliers2,  by = c("prot_id", "trial_id")) %>% 
   mutate(ssim_correct = as.numeric(ssim_top1 == target_position),
          hog_correct = as.numeric(hog_top1 == target_position),
          gist_correct = as.numeric(gist_top1 == target_position),
-         sift_correct = as.numeric(sift_top1 == target_position))
+         sift_correct = as.numeric(sift_top1 == target_position),
+         pdistRGB_correct = as.numeric(pdistRGB_top1 == target_position))
 
-df3 <- df2 %>% gather(metric, value, correct, ssim_correct,hog_correct,gist_correct,sift_correct)
+df3 <- df2 %>% gather(metric, value, correct, ssim_correct,hog_correct,gist_correct,sift_correct,pdistRGB_correct)
 
-p <- df3 %>% ggplot(aes(x = quintile, y = value, col = metric, group = metric)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
-  ylim(0,1)+
-  theme(aspect.ratio = 1) +
-  geom_hline(yintercept = 1/9) +
-  ylab("Perc. correct") +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("Humans", "GIST", "HOG", "SIFT", "SSIM")) + 
-  stat_summary(fun.y=mean, geom="line") +
-  theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
-ggsave(file.path("plots", "opam_figure_metrics.eps"), p, width = 6, height = 6)
+saveRDS(df3, here("data", "oddoneout", "metrics_190611.rds"))
