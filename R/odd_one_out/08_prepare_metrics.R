@@ -6,7 +6,7 @@ set.seed(167)
 
 library(tidyverse)
 
-df_rgb <- read_csv(here::here("data", "pdist_RGB.csv"), col_types = cols(
+df_rgb <- read_csv(here::here("data", "oddoneout","pdist_RGB.csv"), col_types = cols(
   prot_id = col_integer(),
   trial_id = col_integer(),
   im1 = col_character(),
@@ -16,7 +16,7 @@ df_rgb <- read_csv(here::here("data", "pdist_RGB.csv"), col_types = cols(
   pdistRGB = col_double()
 ))
 
-df_metrics <- read_csv(here::here("data", "pairwise_metrics_allprotocols.csv"), col_types = cols(
+df_metrics <- read_csv(here::here("data", "oddoneout","pairwise_metrics_allprotocols.csv"), col_types = cols(
   prot_id = col_integer(),
   trial_id = col_integer(),
   im1 = col_character(),
@@ -36,6 +36,6 @@ df_metrics <- df_metrics %>% left_join(df_rgb, by = c("prot_id", "trial_id", "im
 
 df_metrics %>% select(ssim, hog, gist, sift_sum,pdistRGB) %>%  cor()
 
-saveRDS(df_metrics, here::here("data", "pairwise_metrics_190611.rds"))
+saveRDS(df_metrics, here::here("data", "oddoneout","pairwise_metrics_190611.rds"))
 
                                                                       
