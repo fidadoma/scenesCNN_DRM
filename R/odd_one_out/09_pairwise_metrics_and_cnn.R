@@ -73,8 +73,16 @@ df2 <- df %>% left_join(df_ordered_outliers2,  by = c("prot_id", "trial_id")) %>
          hog_correct = as.numeric(hog_top1 == target_position),
          gist_correct = as.numeric(gist_top1 == target_position),
          sift_correct = as.numeric(sift_top1 == target_position),
-         pdistRGB_correct = as.numeric(pdistRGB_top1 == target_position))
+         pdistRGB_correct = as.numeric(pdistRGB_top1 == target_position),
+         ssim_selected = ssim_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
+         hog_selected = hog_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
+         gist_selected = gist_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
+         sift_selected = sift_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
+         pdistRGB_selected = pdistRGB_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image"))
+         )
 
-df3 <- df2 %>% gather(metric, value, correct, ssim_correct,hog_correct,gist_correct,sift_correct,pdistRGB_correct)
+df3 <- df2 %>% gather(metric, value_fc7, correct, ssim_correct,hog_correct,gist_correct,sift_correct,pdistRGB_correct)
+df3_2 <- df2 %>% gather(metric, value_partic, correct, ssim_selected,hog_selected,gist_selected,sift_selected,pdistRGB_selected)
+df3$value_partic <- df3_2$value_partic
 
-saveRDS(df3, here("data", "oddoneout", "metrics_190611.rds"))
+saveRDS(df3, here("data", "oddoneout", "metrics_190614.rds"))

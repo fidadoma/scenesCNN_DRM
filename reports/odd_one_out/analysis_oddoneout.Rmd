@@ -33,7 +33,7 @@ df <- df %>% anti_join(wrong_trials, by = c("prot_id_version"="prot_id","trial_i
 
 participants <- readxl::read_excel(here("data","oddoneout","oddoneout_participants.xlsx"))
 
-metrics <- readRDS(file = here("data", "oddoneout", "metrics_190611.rds"))
+metrics <- readRDS(file = here("data", "oddoneout", "metrics_190614.rds"))
 ```
 
 ```{r create plot dir}
@@ -332,8 +332,24 @@ cor(df$correct[df$subject_id == 6],df$correct[df$subject_id == 12])
 
 ```{r}
 p <- metrics %>% 
+  filter(metric!= "ssim_correct" & metric!= "correct") %>% 
+  ggplot(aes(x = quintile, y = value_fc7, col = metric, group = metric)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9) +
+  ylab("Perc. correct") +
+  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
+  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("GIST", "HOG", "RGB", "SIFT")) + 
+  stat_summary(fun.y=mean, geom="line") +
+  ggtitle("Predict CNN")
+  #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
+p
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7.eps"), p, width = 6, height = 6)
+
+p <- metrics %>% 
   filter(metric!= "ssim_correct") %>% 
-  ggplot(aes(x = quintile, y = value, col = metric, group = metric)) + 
+  ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
   theme(aspect.ratio = 1) +
@@ -342,9 +358,9 @@ p <- metrics %>%
   scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
   theme(text = element_text(size=18)) + scale_color_discrete(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT")) + 
   stat_summary(fun.y=mean, geom="line") +
-  theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
+  ggtitle("Predict human peformance")
+  #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
-ggsave(file.path(plots_dir, "Fig_chp3_metrics.eps"), p, width = 6, height = 6)
-
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.eps"), p, width = 6, height = 6)
 
 ```
