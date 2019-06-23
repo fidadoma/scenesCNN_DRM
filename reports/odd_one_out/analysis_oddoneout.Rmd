@@ -14,7 +14,7 @@ library(lme4)
 library(MuMIn)
 library(here)
 
-
+source(here("R","utils.R"))
 ```
 
 # Analysis categ
@@ -29,11 +29,16 @@ load(here("data","konkle_180621.RData"))
 
 df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
-df <- df %>% anti_join(wrong_trials, by = c("prot_id_version"="prot_id","trial_id"))
+metrics <- readRDS(file = here("data", "oddoneout", "metrics_190614.rds"))
+  
+wrong_trials <- df %>% select(prot_id_version,trial_id,im1:im9) %>% group_by(prot_id_version,trial_id) %>% gather("key", "value",im1:im9) %>% summarize(n = length(unique(value))) %>% filter(n<9) %>% select(-n)
+
+
+df_withoutwrong <- df %>% anti_join(wrong_trials, by = c("prot_id_version","trial_id"))
 
 participants <- readxl::read_excel(here("data","oddoneout","oddoneout_participants.xlsx"))
 
-metrics <- readRDS(file = here("data", "oddoneout", "metrics_190614.rds"))
+
 ```
 
 ```{r create plot dir}
@@ -316,17 +321,21 @@ ggsave(file.path(plots_dir, "Fig_chp3_category_closet.eps"), p1, width = 6, heig
 ggsave(file.path(plots_dir, "Fig_chp3_category_field.eps"), p2, width = 6, height = 6)
 ```
 
-# Correlation between raters
+# Aggreement between raters
 
 ```{r ICC}
-cor(df$correct[df$subject_id == 1],df$correct[df$subject_id == 7])
-cor(df$correct[df$subject_id == 8],df$correct[df$subject_id == 100])
-cor(df$correct[df$subject_id == 3],df$correct[df$subject_id == 9])
-cor(df$correct[df$subject_id == 4],df$correct[df$subject_id == 10])
-cor(df$correct[df$subject_id == 5],df$correct[df$subject_id == 11])
-cor(df$correct[df$subject_id == 6],df$correct[df$subject_id == 12])
+ck1 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 1],df$mouse.clicked_name[df$subject_id == 7]))
+ck2 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 8],df$mouse.clicked_name[df$subject_id == 100]))
+ck3 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 3],df$mouse.clicked_name[df$subject_id == 9]))
+ck4 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 4],df$mouse.clicked_name[df$subject_id == 10]))
+ck5 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 5],df$mouse.clicked_name[df$subject_id == 11]))
+ck6 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 6],df$mouse.clicked_name[df$subject_id == 12]))
 
+cks <- list(ck1,ck2,ck3,ck4,ck5,ck6)
+cks <- cks %>% purrr::map_dbl(~.$weighted.kappa)
 ```
+
+Average agreement between raters was `r mean(cks) %>% round(2)
 
 ## Metrics
 

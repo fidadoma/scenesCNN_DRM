@@ -7,20 +7,22 @@ output: html_document
 
 ```{r libraries and preparation}
 set.seed(190425)
-library(tidyverse)
-theme_set(theme_bw())
+library(tidyverse); theme_set(theme_classic(16))
 library(lme4)
+library(here)
+
+source(here("R","utils.R"))
 ```
 
 # Load data
 
 ```{r load data, warning=FALSE, message=FALSE}
 
-df <- readRDS(here::here("data/exp_DRM1/results_190509.rds"))
+df <- readRDS(here("data", "exp_DRM1", "results_190509.rds"))
 
-df_participants <- readxl::read_excel(here::here("data/exp_DRM1/participants_190509.xlsx"))
+df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants_190509.xlsx"))
 
-plots_dir <- here::here("plots")
+plots_dir <- here("plots", "exp_DRM1")
 
 if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
 
@@ -28,20 +30,69 @@ df <- df %>% left_join(df_participants, by = c("subject_id"))
 
 ```
 
+# Duration of the exp
+
+```{r duration of the exp}
+data_pth <- here("data", "exp_DRM1", "results") 
+
+exp_duration <- data_pth %>% 
+  dir(pattern = "*.log", full.names = T) %>% 
+  purrr::map(read_file) %>% 
+  purrr::map_dbl(get_dur) 
+
+
+```
+Average experiment duration: `r (exp_duration / 60) %>% mean() %>% round(2)`, SD = `r (exp_duration / 60) %>% sd() %>% round(2)`
+
 # Desc stat
+
+
 
 ## Participant data
 
 ```{r participant desc}
-df_participants %>% summarize(m_age = mean(age), sd_age = sd(age), n_males = sum(gender == "M"), n_payments = sum(payment == "yes")) %>% knitr::kable(digits=2)
+df_participants %>% summarize(n_total = n(), m_age = mean(age), sd_age = sd(age), n_males = sum(gender == "M"), n_payments = sum(payment == "yes")) %>% knitr::kable(digits=2)
 ```
 
+
+
 ```{r desc stat}
-df %>% 
+df %>% group_by(subject_id, type) %>% 
+  summarize(correct = mean(correct)) %>% 
   group_by(type) %>% 
   summarize(m = mean(correct), sd = sd(correct)) %>% 
   knitr::kable(digits = 2)
 
+df %>% group_by(subject_id, type) %>% 
+  filter(type != "target") %>% 
+  summarize(correct = 1-mean(correct)) %>% 
+  group_by(type) %>% 
+  summarize(m = mean(correct), sd = sd(correct)) %>% 
+  knitr::kable(digits = 2)
+```
+
+## And visualize
+
+```{r}
+
+p <- df %>%
+  group_by(subject_id, type) %>% 
+  summarize(correct = mean(correct)) %>% 
+  ggplot(aes(x = type, y = correct)) + 
+  ylim(0,1)+
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = .5) +
+  ylab("Perc. correct") +
+  geom_violin(trim = F)+
+  stat_summary(fun.data = "mean_cl_boot") + 
+  xlab("Type")
+  
+p
+ggsave(file.path(plots_dir, "Fig_chp4_results_accuracy.eps"), p, width = 6, height = 6)
+
+```
+
+```{r}
 df %>% 
   group_by(subject_id, type) %>% 
   summarize(correct = mean(correct)) %>% 
@@ -52,41 +103,79 @@ df %>%
 
 
 df %>% 
-  group_by(subject_id, type) %>% 
-  summarize(correct = mean(correct)) %>% 
   ggplot(aes(x = type, y = correct)) +
-  geom_point() +
+  stat_summary(fun.data = "mean_cl_boot") +
   ylim(0,1) + theme(aspect.ratio = 1) +
   facet_wrap(~subject_id)  
 
-df_dprime <- df %>% group_by(subject_id,type) %>% 
-  summarize(correct = mean(correct),
-            zH = qnorm(correct)) %>% 
-  mutate(d_old_close = zH[type == "target"]-zH[type == "close distractor"],
-         d_old_far = zH[type == "target"]-zH[type == "far distractor"],
-         d_close_far = zH[type == "close distractor"]-zH[type == "far distractor"])
+```
 
-df_dprime_agg <- df_dprime %>% 
-  group_by(type) %>% 
-  summarize(m = mean(zH),sd = sd(zH))
 
-df_dprime_agg
+## Reaction times
 
-x0 <- (-400:400)/100
+### First remove rt larger than 5~s
 
-y_close  <- dnorm(x0, df_dprime_agg$m[df_dprime_agg$type == "close distractor"], 1)
-y_far  <- dnorm(x0, df_dprime_agg$m[df_dprime_agg$type == "far distractor"], 1)
-y_target  <- dnorm(x0, df_dprime_agg$m[df_dprime_agg$type == "target"], 1)
-
-df_plot <- tibble(x = rep(x0,3), y = c(y_close, y_far, y_target), type = rep(c("close","far","target"), each = length(x0)))
-
-p_dprimes <- df_plot %>% ggplot(aes(x = x, y = y, col = type)) + geom_point() + geom_vline(xintercept = 0) +
-  theme(aspect.ratio = 1)
-p_dprimes
+```{r}
+df_rt <- df %>% filter(rt_key <= 5)
 
 ```
 
-split the analysis for first half and second half. 
+### Descriptive statistics
+
+```{r}
+df_rt %>%
+  group_by(subject_id, type) %>% 
+  summarize(rt = mean(rt_key)) %>% 
+  group_by(type) %>% 
+  summarize(m_rt = mean(rt),sd_rt = sd(rt)) %>% 
+  knitr::kable(digits = 2)
+```
+
+### Test differences in RT between stimuli
+
+```{r}
+lmRT_full <- lmer(log(rt_key) ~ type + (1+type|subject_id), df_rt)
+lmRT_null <- lmer(log(rt_key) ~ 1 + (1+type|subject_id), df_rt)
+
+anova(lmRT_full,lmRT_null)
+
+summary(multcomp::glht(lmRT_full, linfct=multcomp::mcp(type="Tukey")))
+
+df_rt %>%
+  group_by(subject_id, type) %>% 
+  summarize(rt = mean(rt_key)) %>% 
+  arrange(subject_id, type) %>% 
+  filter(type != "target") %>% 
+  lsr::cohensD(rt ~ type, data = ., method = "paired")
+```
+
+### Visualize
+
+```{r}
+p <- df %>% 
+  filter(rt_key < 5) %>% 
+  ggplot(aes(x = rt_key)) + 
+  theme(aspect.ratio = 1) +
+  geom_histogram(binwidth = 0.2) + 
+  xlab("RT [s]")
+p
+ggsave(file.path(plots_dir, "Fig_chp4_results_rt_hist.eps"), p, width = 6, height = 6)
+
+p <- df_rt %>% 
+  group_by(subject_id, type) %>% 
+  summarize(rt = mean(rt_key)) %>% 
+  ggplot(aes(x = type, y = rt)) + 
+  theme(aspect.ratio = 1) +
+  ylab("RT [s]") +
+  geom_violin(trim = F)+
+  stat_summary(fun.data = "mean_cl_boot") + 
+  xlab("Type")
+p
+ggsave(file.path(plots_dir, "Fig_chp4_results_rt.eps"), p, width = 6, height = 6)
+```
+
+
+## split the analysis for first half and second half. 
 
 ```{r}
 trial_ids <- df %>% 
@@ -102,17 +191,59 @@ df_acc2 %>%
   summarize(m = mean(correct), sd = sd(correct)) %>% 
   knitr::kable(digits = 2)
 
-df_acc2 %>% 
+p <- df_acc2 %>% 
   group_by(subject_id, type, part) %>% 
   summarize(correct = mean(correct)) %>% 
   ggplot(aes(x = type, y = correct, col = part, group = part)) +
   stat_summary(fun.data = "mean_cl_boot") +
   stat_summary(fun.y = "mean", geom = "line") +
-  ylim(0,1) + theme(aspect.ratio = 1)
+  ylim(0,1) + theme(aspect.ratio = 1) +
+  scale_color_discrete("Halves", labels = c("First half", "Second half")) +
+  ylab("Perc. correct") + xlab("Type")
+
+p
+
+ggsave(file.path(plots_dir, "Fig_chp4_results_perhalves.eps"), p, width = 6, height = 6)
+```
+
+
+### Running mean for accuracy and rt
+
+```{r}
+df_rollmean <- df_acc2 %>% group_by(type) %>% 
+  arrange(trial_id) %>% 
+  mutate(correct = zoo::rollmean(correct, 250, align = "right", fill = NA), rt = zoo::rollmean(rt_key,250,align = "right", fill = NA))
+
+p <-  df_rollmean %>% 
+  ggplot(aes(x = trial_id, y = correct, col = type)) +
+  geom_path() + 
+  ylim(0,1) + 
+  ylab("Perc. correct") + xlab("Trial id") + 
+  theme(aspect.ratio = 0.5)
+
+p
+
+ggsave(file.path(plots_dir, "Fig_chp4_results_runningmean.svg"), p, width = 6, height = 6)
+
+p <-  df_rollmean %>% 
+  ggplot(aes(x = trial_id, y = rt, col = type)) +
+  geom_path() + 
+  ylab("Reaction time [s]") + xlab("Trial id") + 
+  theme(aspect.ratio = 0.5)
+
+p
+
+ggsave(file.path(plots_dir, "Fig_chp4_results_runningmean_rt.svg"), p, width = 6, height = 6)
 
 ```
 
-Analysis for first half and second half with respect to payment
+### Tests
+
+```{r}
+df_acc2 %>% group_by(subject_id,type,part) %>% summarize(correct = mean(correct)) %>% filter(type == "target") %>% t.test(correct~part,., paired = T, var.equal = T) %>% apa::apa()
+```
+
+## Analysis for first half and second half with respect to payment
 
 ```{r}
 trial_ids <- df %>% 
@@ -143,7 +274,57 @@ df_acc2 %>%
   t.test(correct ~ payment, .)
 ```
 
+```{r payment lmer}
+
+lm1_full <- glmer(correct~type*payment+(1+type|subject_id) + (1|category), df, family = binomial())
+
+lm1_justpayment <- glmer(correct~payment+(1+type|subject_id) + (1|category), df, family = binomial())
+
+lm1_justtype <- glmer(correct~type+(1+type|subject_id) + (1|category), df, family = binomial())
+
+lm1_nointeraction <- glmer(correct~type+payment+(1+type|subject_id) + (1|category), df, family = binomial())
+
+lm1_null <- glmer(correct~1+(1+type|subject_id) + (1|category), df, family = binomial())
+
+anova(lm1_justtype,lmnull)
+av1 <- anova(lm1_justpayment,lmnull)
+av1
+av1$Chisq
+
+anova(lm1_justtype,lm1_nointeraction)
+anova(lm1_full,lm1_nointeraction)
+
+```
+
+```{r payment part lmer }
+
+glmer(correct~type*payment*part+(1+type|subject_id) + (1|category), df_acc2, family = binomial()) %>% summary()
+
+lm2_justpayment <- glmer(correct~payment+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
+
+lm2_justtype <- glmer(correct~type+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
+
+lm2_justpart <- glmer(correct~part+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
+
+lm2_justpart <- glmer(correct~part+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
+
+lm2_nointeraction <- glmer(correct~type+payment+part +(1+type|subject_id) + (1|category), df_acc2, family = binomial())
+
+lm2_null <- glmer(correct~1+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
+
+anova(lm1_justtype,lmnull)
+av1 <- anova(lm1_justpayment,lmnull)
+av1
+av1$Chisq
+
+anova(lm1_justtype,lm1_nointeraction)
+anova(lm1_full,lm1_nointeraction)
+
+```
+
 The differences regarding payment is not significant.
+
+# Dprime analysis
 
 ```{r two dprimes and bias}
 df_dprime2 <- df %>% 
@@ -155,51 +336,155 @@ df_dprime2 <- df %>%
          d_oldfar = qnorm(H) - qnorm(FA_far),
          c_oldclose = -0.5*(qnorm(H) + qnorm(FA_close)),
          c_oldfar = -0.5*(qnorm(H) + qnorm(FA_far)))
-t.test(df_dprime2$d_oldclose, df_dprime2$d_oldfar)
-t.test(df_dprime2$c_oldclose, df_dprime2$c_oldfar)  
+t.test(df_dprime2$d_oldclose, df_dprime2$d_oldfar, paired = T)
+t.test(df_dprime2$c_oldclose, df_dprime2$c_oldfar, paired = T)  
 colMeans(df_dprime2)
+
+df_dprime2
+
+mean(df_dprime2$d_oldclose) %>% round(2)
+mean(df_dprime2$d_oldfar) %>% round(2)
+sd(df_dprime2$d_oldclose) %>% round(2)
+sd(df_dprime2$d_oldfar) %>% round(2)
+
+mean(df_dprime2$c_oldclose) %>% round(2)
+mean(df_dprime2$c_oldfar) %>% round(2)
+sd(df_dprime2$c_oldclose) %>% round(2)
+sd(df_dprime2$c_oldfar) %>% round(2)
 ```
 
 ```{r use rating to compute ROC}
 
-df2 <- df %>% unite(resp, key_resp, confidence) %>% filter(type!="far distractor")
-df3 <- df %>% unite(resp, key_resp, confidence) %>% filter(type!="close distractor")
+df_oldclose <- create_roc_data(df, without_type = "far distractor")
 
-tb1_oldclose <- table(df2$corrKey,df2$resp) %>% prop.table(margin = 1)
-tb1_oldclose <- tb1_oldclose[c(2,1),c(6,4,5,1,2,3)]
-tb1_oldclose[1,] <- cumsum(tb1_oldclose[1,])
-tb1_oldclose[2,] <- cumsum(tb1_oldclose[2,])
-tb1_oldclose <- tb1_oldclose[,-6]
+df_oldfar <- create_roc_data(df, without_type = "close distractor")
 
-tb2_oldclose <- qnorm(tb1_oldclose)
-dprimes_oldclose <- tb2_oldclose[1,]-tb2_oldclose[2,]
+df_oldclose_agg <- df_oldclose %>% group_by(var) %>% summarize(Hs = mean(Hs), FAs = mean(FAs), dprime = mean(dprime))
 
-tb1_oldfar <- table(df3$corrKey,df3$resp) %>% prop.table(margin = 1)
-tb1_oldfar <- tb1_oldfar[c(2,1),c(6,4,5,1,2,3)]
-tb1_oldfar[1,] <- cumsum(tb1_oldfar[1,])
-tb1_oldfar[2,] <- cumsum(tb1_oldfar[2,])
-tb1_oldfar <- tb1_oldfar[,-6]
-
-tb2_oldfar <- qnorm(tb1_oldfar)
-dprimes_oldfar <- tb2_oldfar[1,]-tb2_oldfar[2,]
+df_oldfar_agg <- df_oldfar %>% group_by(var) %>% summarize(Hs = mean(Hs), FAs = mean(FAs), dprime = mean(dprime))
 
 
-HFA  <- rbind(tibble(H =tb1_oldclose[1,], FA = tb1_oldclose[2,], type = "old-close"),
-              tibble(H =tb1_oldfar[1,], FA = tb1_oldfar[2,], type = "old-far"))
-zHFA <- rbind(tibble(H =tb2_oldclose[1,], FA = tb2_oldclose[2,], type = "old-close"),
-              tibble(H =tb2_oldfar[1,], FA = tb2_oldfar[2,], type = "old-far"))
-HFA %>% ggplot(aes(x = FA, y = H, col = type)) + 
-  geom_point() + 
+p1 <- df_oldclose %>% ggplot(aes(x = FAs, y = Hs, group = as.factor(subject_id))) + 
+  geom_path(alpha = I(0.2)) + 
   xlim(0,1) + 
   ylim(0,1) + 
-  geom_segment(x = 0, y = 0, xend = 1,yend = 1) + theme(aspect.ratio = 1)
+  geom_segment(x = 0, y = 0, xend = 1,yend = 1) +
+  theme(aspect.ratio = 1) +
+  geom_path(data = df_oldclose_agg, group = 1, size = 1.5, col = "red") + 
+  ggtitle("Target-close distractor discrimination")
 
-zHFA %>% ggplot(aes(x = FA, y = H)) + 
-  geom_point() + 
-  stat_smooth(method = "lm", se = F) + 
-  xlim(-2.5,2.5) + 
-  ylim(-2.5,2.5) + 
-  geom_segment(x = -2, y = -2, xend = 2,yend = 2)
+p2 <- df_oldfar %>% ggplot(aes(x = FAs, y = Hs, group = as.factor(subject_id))) + 
+  geom_path(alpha = I(0.2)) + 
+  xlim(0,1) + 
+  ylim(0,1) + 
+  geom_segment(x = 0, y = 0, xend = 1,yend = 1) +
+  theme(aspect.ratio = 1) +
+  geom_path(data = df_oldfar_agg, group = 1, size = 1.5, col = "red") + 
+  ggtitle("Target-far distractor discrimination")
+
+# there were problem with transparency, I needed to save it as svg and save manually as eps
+
+ggsave(file.path(plots_dir, "Fig_chp4_results_ROC_oldclose.svg"), p1, width = 6, height = 6)
+
+ggsave(file.path(plots_dir, "Fig_chp4_results_ROC_oldfar.svg"), p2, width = 6, height = 6)
+
+```
+
+```{r}
+slope_oldclose <- get_ROC_slopes(df_oldclose)
+slope_oldfar <- get_ROC_slopes(df_oldfar)
+intercepts_oldclose <- get_ROC_intercepts(df_oldclose)
+intercepts_oldfar   <- get_ROC_intercepts(df_oldfar)
+
+
+df_dprime2_da <- df_dprime2 %>% mutate(s_oldclose = slope_oldclose,
+                      s_oldfar = slope_oldfar) %>% 
+  mutate(da_oldclose = compute_da(H,FA_close,s_oldclose),
+         da_oldfar = compute_da(H,FA_far,s_oldfar))
+
+
+
+mean(df_dprime2_da$da_oldclose) %>% round(2)
+mean(df_dprime2_da$da_oldfar) %>% round(2)
+sd(df_dprime2_da$da_oldclose) %>% round(2)
+sd(df_dprime2_da$da_oldfar) %>% round(2)
+
+
+df_dprime2_da %>% select(da_oldclose,da_oldfar) %>% arrange(da_oldfar)
+t.test(df_dprime2_da$da_oldclose, df_dprime2_da$da_oldfar, paired = T) %>% apa::apa()
+lsr::cohensD(df_dprime2_da$da_oldclose, df_dprime2_da$da_oldfar,method = "paired")
+```
+
+slope
+*  old-close: `r mean(slope_oldclose) %>% round(2)`, SD = `r sd(slope_oldclose) %>% round(2)`
+*  old-far: `r mean(slope_oldfar) %>% round(2)`, SD = `r sd(slope_oldfar) %>% round(2)`
+
+```{r test nonunit slope}
+
+t.test(slope_oldclose, mu = 1)
+t.test(slope_oldfar, mu = 1)
+```
+
+```{r SDT model plot}
+df_dprime <- df %>% group_by(subject_id,type) %>% 
+  summarize(correct = mean(correct),
+            zH = qnorm(correct)) %>% 
+  mutate(d_old_close = zH[type == "target"]-zH[type == "close distractor"],
+         d_old_far = zH[type == "target"]-zH[type == "far distractor"],
+         d_close_far = zH[type == "close distractor"]-zH[type == "far distractor"])
+
+
+df_dprime_agg <- df_dprime %>% 
+  group_by(type) %>% 
+  summarize(m = mean(zH),sd = sd(zH))
+
+df_dprime_agg
+
+x0 <- (-400:400)/100
+
+y_close  <- dnorm(x0, df_dprime_agg$m[df_dprime_agg$type == "close distractor"], mean(slope_oldclose))
+y_far  <- dnorm(x0, df_dprime_agg$m[df_dprime_agg$type == "far distractor"], mean(slope_oldfar))
+y_target  <- dnorm(x0, df_dprime_agg$m[df_dprime_agg$type == "target"], 1)
+
+df_plot <- tibble(x = rep(x0,3), y = c(y_close, y_far, y_target), type = rep(c("close distractor","far distractor","target"), each = length(x0)))
+
+p_SDT_model <- df_plot %>% ggplot(aes(x = x, y = y, col = type)) + geom_path(size = 1.2) + geom_vline(xintercept = 0) +
+  theme(aspect.ratio = 1)
+p_SDT_model
+ggsave(file.path(plots_dir, "Fig_chp4_results_dprimedistance.eps"), p_dprimes, width = 6, height = 6)
+
+(df_dprime_agg$m[df_dprime_agg$type == "close distractor"]-df_dprime_agg$m[df_dprime_agg$type == "target"]) %>% round(2)
+
+(df_dprime_agg$m[df_dprime_agg$type == "far distractor"]-df_dprime_agg$m[df_dprime_agg$type == "close distractor"]) %>% round(2)
+```
+
+
+
+# Per image accuracy
+
+```{r }
+df_perimage <- df %>% group_by(img_name,type) %>% summarize(m = mean(correct), sd = sd(correct)) %>% arrange(-m)
+
+order_category <- 
+  df %>%
+  group_by(category) %>% 
+  do(Hmisc::smean.cl.boot(.$correct) %>% t() %>% as_tibble()) %>% 
+  arrange(Mean) %>% 
+  ungroup() %>% 
+  mutate(category = forcats::as_factor(category), rank = 1:n())
+
+p_ordercat <- order_category %>%
+  ggplot(aes(x = category, xend = category, y = Lower, yend = Upper, group = 1)) +
+  geom_segment(size = 1.2) +
+  geom_point(aes(y=Mean), size = 3) + 
+  theme(aspect.ratio = 0.2) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 16)) + 
+  theme(legend.position = "top") + 
+  xlab("Category") + 
+  ylab("Accuracy")
+  
+p_ordercat
+ggsave(file.path(plots_dir, "Fig_chp4_results_categories.svg"), p_ordercat, width = 9, height = 6)
 ```
 
 # Memorability
@@ -207,19 +492,32 @@ zHFA %>% ggplot(aes(x = FA, y = H)) +
 Memorability were computed using pretrained CNN
 
 ```{r load mem data}
-mem_imgnames <- read_csv(here::here("data/exp_DRM1/memorability/memorability_imgnames.txt"), col_names = F)
-mem_values <- read_csv(here::here("data/exp_DRM1/memorability/memorability_all.txt"), col_names = F)
+mem_imgnames <- read_csv(here("data/exp_DRM1/memorability/memorability_imgnames.txt"), col_names = F)
+mem_values <- read_csv(here("data/exp_DRM1/memorability/memorability_all.txt"), col_names = F)
 
 df_mem <- tibble(img_name = mem_imgnames$X1, mem_score = mem_values$X1)
-dfm <- df %>% left_join(df_mem,by = "img_name")
+dfm <- df_perimage %>% left_join(df_mem,by = "img_name") %>% rename(correct = m)
 
-cor.test(~correct+mem_score, dfm %>% filter(type == "target"))
-cor.test(~correct+mem_score, dfm %>% filter(type == "close distractor"))
-cor.test(~correct+mem_score, dfm %>% filter(type == "far distractor"))
+(cor.test(~correct+mem_score, dfm %>% filter(type == "target")) %>% papaja::apa_print.htest())$full_result
+(cor.test(~correct+mem_score, dfm %>% filter(type == "close distractor")) %>% papaja::apa_print.htest())$full_result
+(cor.test(~correct+mem_score, dfm %>% filter(type == "far distractor")) %>% papaja::apa_print.htest())$full_result
 ```
 
-# Per image accuracy
+## Test 
 
-```{r }
-df %>% group_by(img_name,type) %>% summarize(m = mean(correct), sd = sd(correct)) %>% arrange(-m)
+```{r}
+lm1 <- glmer(correct~type+(1+type|subject_id) + (1|category), df %>% filter(type!="target"), family = binomial())
+
+lmnull <- glmer(correct~1+(1+type|subject_id) + (1|category), df %>% filter(type!="target"), family = binomial())
+
+anova(lm1,lmnull)
+```
+
+```{r}
+df_for_onettest <- df %>% group_by(subject_id,type) %>% summarize(correct = mean(correct))
+df_for_onettest %>% group_by(type) %>% do(t.test(.$correct, mu = .5) %>% broom::tidy()) %>% 
+  left_join(df_for_onettest %>% group_by(type) %>% do(d=lsr::cohensD(.$correct, mu = .5)) %>% mutate(d = unlist(d)),
+            by = "type")
+
+
 ```
