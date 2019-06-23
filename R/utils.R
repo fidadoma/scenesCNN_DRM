@@ -88,3 +88,81 @@ get_top1 <- function(x) {
 trial_id_with_gaps <- function(from = 1, to = 15, gapsize = 15, ngaps = 10) {
   purrr::map(seq(0,ngaps - 1),function(x) ((to+gapsize)*x)+(from:to)) %>% unlist()
 }
+
+get_dur <- function(log_file) {
+  list_lines <- str_split(log_file,pattern ="\n") 
+  list_lines <- list_lines[[1]] %>% stringi::stri_remove_empty()
+  strttime <- list_lines[1] %>% str_split(pattern = " ", simplify = T)
+  
+  endtime <- tail(list_lines,1) %>% str_split(pattern = " ", simplify = T)
+  
+  as.numeric(endtime[1])-as.numeric(strttime[1])
+}
+
+create_roc_data <- function(df, without_type) {
+  df %>% 
+    unite(resp, key_resp, confidence) %>% 
+    filter(type!=without_type) %>% 
+    mutate(resp = factor(resp, levels = c("old_very sure","old_somewhat sure", "old_not at all sure","new_not at all sure", "new_somewhat sure", "new_very sure"))) %>% 
+    select(subject_id, resp, corrKey) %>% 
+    nest(-subject_id) %>% 
+    group_by(subject_id) %>% 
+    do(prepare_roc_curve(.$data))
+  
+}
+
+prepare_roc_curve <- function(df) {
+  df1 <- df[[1]]
+  df_raw <- table(df1$corrKey, df1$resp) %>% 
+    prop.table(margin = 1) %>% 
+    apply(.,1,cumsum) %>% 
+    .[-6,] 
+  
+  
+  df_out <- tibble(var = paste0("p",1:5),
+         Hs = df_raw[,2],
+         FAs = df_raw[,1],
+         zHs = qnorm(Hs),
+         zFAs = qnorm(FAs),
+         dprime = df_raw[,2]-df_raw[,1])
+         
+  rbind(df_out,
+    tibble(var = c("p0","p6"), Hs = c(0,1),FAs = c(0,1), zHs = c(NA,NA),zFAs = c(NA,NA), dprime = c(NA,NA))) %>% 
+    arrange(var)
+  
+  
+}
+
+get_ROC_slopes <- function(df) {
+  zROC_params_oldclose <- df %>% 
+    ungroup() %>% 
+    filter(!is.na(dprime)) %>% 
+    filter(!is.infinite(zHs)) %>%
+    filter(!is.infinite(zFAs)) %>% 
+    split(.$subject_id) %>% 
+    purrr::map(~lm(zHs~zFAs,.)) %>% 
+    purrr::map_dfc(coef)
+  zROC_params_oldclose[2,] %>% gather() %>% pull(value)
+  
+}
+
+get_ROC_intercepts <- function(df) {
+zROC_params_oldclose <- df %>% 
+  ungroup() %>% 
+  filter(!is.na(dprime)) %>% 
+  filter(!is.infinite(zHs)) %>%
+  filter(!is.infinite(zFAs)) %>% 
+  split(.$subject_id) %>% 
+  purrr::map(~lm(zHs~zFAs,.)) %>% 
+  purrr::map_dfc(coef)
+zROC_params_oldclose[1,] %>% gather() %>% pull(value)
+
+}
+
+compute_da <- function(H,FA,s) {
+  sqrt(2/(1+s^2))*(qnorm(H)-s*qnorm(FA))
+}
+
+compute_c2 <- function(H,FA,s) {
+  (-s/(1+s))*(qnorm(H)-qnorm(FA))
+}
