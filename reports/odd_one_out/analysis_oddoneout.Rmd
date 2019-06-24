@@ -354,7 +354,7 @@ p <- metrics %>%
   ggtitle("Predict CNN")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
-ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7.svg"), p, width = 6, height = 6)
 
 p <- metrics %>% 
   filter(metric!= "ssim_correct") %>% 
@@ -370,6 +370,6 @@ p <- metrics %>%
   ggtitle("Predict human peformance")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
-ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.svg"), p, width = 6, height = 6)
 
 ```
