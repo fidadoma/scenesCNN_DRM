@@ -166,3 +166,47 @@ compute_da <- function(H,FA,s) {
 compute_c2 <- function(H,FA,s) {
   (-s/(1+s))*(qnorm(H)-qnorm(FA))
 }
+
+plot_normal_ROC <- function(l) {
+  df <- NULL 
+  df_HF <- tibble(H = NA,FA = NA,label = l$label)
+  Hs  <- seq(0, 1, 0.01)
+  
+  for (i in 1:length(l$H)) {
+    H <- l$H[i]
+    FA <- l$FA[i]
+    if (H < FA) {
+      FA   <- 1-FA
+      H <- 1-H
+    }
+    
+    df_HF$H[i] <- H
+    df_HF$FA[i] <- FA
+    d   <- compute_dprime(H, FA)
+    
+    FAs <- compute_FA_from_dprime(d,Hs)
+    if(is.null(df)){ 
+      df <- tibble(Hit=Hs,`False alarm` = FAs, label = l$label[i])
+    } else {
+      df <- rbind(df, tibble(Hit=Hs,`False alarm` = FAs, label = l$label[i]))
+    }
+    
+    
+  }    
+  df %>% ggplot(aes(y = Hit, x = `False alarm`, group = label)) + 
+    geom_line() + 
+    geom_point(data = df_HF, mapping = aes(x = FA, y = H, col = label), size = 2) + 
+    geom_text(data = df_HF, mapping = aes(x = FA, y = H+0.05, label = as.character(compute_dprime(H,FA) %>% round(2))), size = 6) + 
+    scale_color_discrete("Participant") +
+    xlab("False alarm") + 
+    theme(aspect.ratio = 1)
+  
+}
+
+compute_dprime <- function(H,FA) {
+  return(qnorm(H) - qnorm(FA))
+}
+compute_FA_from_dprime <- function(d,H) {
+  
+  return(pnorm(qnorm(H) - d))
+}
