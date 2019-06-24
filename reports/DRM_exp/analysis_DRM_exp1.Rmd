@@ -427,8 +427,9 @@ t.test(slope_oldfar, mu = 1)
 
 ```{r SDT model plot}
 df_dprime <- df %>% group_by(subject_id,type) %>% 
-  summarize(correct = mean(correct),
-            zH = qnorm(correct)) %>% 
+  
+  summarize(yes = mean(key_resp == "old"),
+            zH = qnorm(yes)) %>% 
   mutate(d_old_close = zH[type == "target"]-zH[type == "close distractor"],
          d_old_far = zH[type == "target"]-zH[type == "far distractor"],
          d_close_far = zH[type == "close distractor"]-zH[type == "far distractor"])
@@ -451,7 +452,7 @@ df_plot <- tibble(x = rep(x0,3), y = c(y_close, y_far, y_target), type = rep(c("
 p_SDT_model <- df_plot %>% ggplot(aes(x = x, y = y, col = type)) + geom_path(size = 1.2) + geom_vline(xintercept = 0) +
   theme(aspect.ratio = 1)
 p_SDT_model
-ggsave(file.path(plots_dir, "Fig_chp4_results_dprimedistance.eps"), p_dprimes, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp4_results_dprimedistance.svg"), p_dprimes, width = 6, height = 6)
 
 (df_dprime_agg$m[df_dprime_agg$type == "close distractor"]-df_dprime_agg$m[df_dprime_agg$type == "target"]) %>% round(2)
 
