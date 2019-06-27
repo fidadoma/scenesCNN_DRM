@@ -129,11 +129,11 @@ p <- df_onecat_distances %>%
   theme(aspect.ratio = 1) +
   geom_segment(data = df_segments, aes(x=x,xend=xend,y=y,yend=yend)) +
   annotate(x = qs[3:5]-c(3,1,-0.6), y = c(19,19,19), label = c("2.","3.","4."), geom = "label", size = 5) +
-  ggtitle(sprintf("Kategorie: %s",this_cat)) +
-  xlab("Vzdálenost") +
-  ylab("Počet")
+  ggtitle(sprintf("Category: %s",this_cat)) +
+  xlab("Distance") +
+  ylab("Count")
 p  
-ggsave(file.path(plots_dir, "Fig_distance_histogram.eps"), p, width = 6, height = 6)  
+ggsave(file.path(plots_dir, "Fig_chp3_distance_histogram.svg"), p, width = 6, height = 6)  
 ```
 
 ## Visualize
@@ -152,8 +152,8 @@ p <- df %>%
   #scale_x_continuous("Kvintil", breaks = c(2,3,4), labels = c("2","3","4")) + 
   geom_violin(trim = F)+
   stat_summary(fun.data = "mean_cl_boot") + 
-  xlab("Kvintil") + 
-  ylab("Správnost")
+  xlab("Quintile")
+  
   
 p
 ggsave(file.path(plots_dir, "Fig_chp3_results.eps"), p, width = 6, height = 6)
@@ -195,10 +195,10 @@ p_ordercat <- order_category %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 16)) + 
   theme(legend.position = "top") + 
   xlab("Category") + 
-  ylab("Accuracy") + 
+  ylab("Perc. correct") + 
   scale_color_discrete("Category type", labels = c("Man-made","Natural")) 
 p_ordercat
-ggsave(file.path(plots_dir, "Fig_chp3_ordercat.eps"), p_ordercat, width = 18, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_ordercat.svg"), p_ordercat, width = 18, height = 6)
 ```
 
 ## Test
@@ -254,10 +254,10 @@ anova(glm2, glm2_null)
 ### Visualize glmer
 
 ```{r}
-dredge.models<-dredge(glm2,trace=FALSE,rank="AICc")
-my.dredge.models<-get.models(dredge.models,subset = T)
-silly<-model.avg(my.dredge.models,subset=delta<10)
-predict(silly,type="response")
+#dredge.models<-dredge(glm2,trace=FALSE,rank="AICc")
+#my.dredge.models<-get.models(dredge.models,subset = T)
+#silly<-model.avg(my.dredge.models,subset=delta<10)
+#predict(silly,type="response")
 
 p0 <- df %>% ggplot(aes(x = d_ratio, y =correct))+
     geom_point(alpha=0.5)
@@ -270,11 +270,11 @@ p <- p0 + geom_point(data=predframe,colour="red")+
   ylim(0,1)+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
-  xlab("Poměr vzdáleností") + 
-  ylab("Správnost")
+  xlab("Distance ratio") + 
+  ylab("Perc. correct")
 
 p
-ggsave(file.path(plots_dir, "Fig_chp3_results_ratio.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_results_ratio.svg"), p, width = 6, height = 6)
   
 ```
 
@@ -317,8 +317,8 @@ fc7_names <- colnames(fc7)
 
 p1 <- onecat_plot(bottom_one$category[1])
 p2 <- onecat_plot(top_one$category[1])
-ggsave(file.path(plots_dir, "Fig_chp3_category_closet.eps"), p1, width = 6, height = 6)
-ggsave(file.path(plots_dir, "Fig_chp3_category_field.eps"), p2, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_category_closet.svg"), p1, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_category_field.svg"), p2, width = 6, height = 6)
 ```
 
 # Aggreement between raters
