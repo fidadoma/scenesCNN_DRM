@@ -203,7 +203,7 @@ p <- df_acc2 %>%
 
 p
 
-ggsave(file.path(plots_dir, "Fig_chp4_results_perhalves.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp4_results_perhalves.svg"), p, width = 6, height = 6)
 ```
 
 
