@@ -1,3 +1,5 @@
+# this script was used for version, where images were not limited to single category
+
 rm(list = ls())
 
 set.seed(180625)

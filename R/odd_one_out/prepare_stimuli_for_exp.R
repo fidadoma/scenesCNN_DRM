@@ -1,3 +1,5 @@
+# this script was used for copying stimul from konkle database into psychopy
+
 rm(list = ls())
 
 # load data and set paths -------------------------------------------------

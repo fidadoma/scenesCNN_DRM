@@ -5,6 +5,8 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 output: html_document
 ---
 
+# Load libraries
+
 ```{r libraries and preparation}
 set.seed(190425)
 library(tidyverse); theme_set(theme_classic(16))
@@ -15,6 +17,8 @@ source(here("R","utils.R"))
 ```
 
 # Load data
+
+Data were preprocesseb by scripts 
 
 ```{r load data, warning=FALSE, message=FALSE}
 
@@ -85,10 +89,11 @@ p <- df %>%
   ylab("Perc. correct") +
   geom_violin(trim = F)+
   stat_summary(fun.data = "mean_cl_boot") + 
-  xlab("Type")
+  xlab("Type") +
+  theme(text = element_text(size = 24))
   
 p
-ggsave(file.path(plots_dir, "Fig_chp4_results_accuracy.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp4_results_accuracy.svg"), p, width = 6, height = 6)
 
 ```
 
@@ -157,7 +162,8 @@ p <- df %>%
   ggplot(aes(x = rt_key)) + 
   theme(aspect.ratio = 1) +
   geom_histogram(binwidth = 0.2) + 
-  xlab("RT [s]")
+  xlab("RT [s]") + 
+  theme(text = element_text(size = 24))
 p
 ggsave(file.path(plots_dir, "Fig_chp4_results_rt_hist.eps"), p, width = 6, height = 6)
 
@@ -169,9 +175,10 @@ p <- df_rt %>%
   ylab("RT [s]") +
   geom_violin(trim = F)+
   stat_summary(fun.data = "mean_cl_boot") + 
-  xlab("Type")
+  xlab("Type") +
+  theme(text = element_text(size = 24))
 p
-ggsave(file.path(plots_dir, "Fig_chp4_results_rt.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp4_results_rt.svg"), p, width = 6, height = 6)
 ```
 
 
@@ -371,7 +378,8 @@ p1 <- df_oldclose %>% ggplot(aes(x = FAs, y = Hs, group = as.factor(subject_id))
   geom_segment(x = 0, y = 0, xend = 1,yend = 1) +
   theme(aspect.ratio = 1) +
   geom_path(data = df_oldclose_agg, group = 1, size = 1.5, col = "red") + 
-  ggtitle("Target-close distractor discrimination")
+  ggtitle("Target - Close distractor") +
+  theme(text = element_text(size = 24))
 
 p2 <- df_oldfar %>% ggplot(aes(x = FAs, y = Hs, group = as.factor(subject_id))) + 
   geom_path(alpha = I(0.2)) + 
@@ -380,7 +388,8 @@ p2 <- df_oldfar %>% ggplot(aes(x = FAs, y = Hs, group = as.factor(subject_id))) 
   geom_segment(x = 0, y = 0, xend = 1,yend = 1) +
   theme(aspect.ratio = 1) +
   geom_path(data = df_oldfar_agg, group = 1, size = 1.5, col = "red") + 
-  ggtitle("Target-far distractor discrimination")
+  ggtitle("Target - Far distractor") +
+  theme(text = element_text(size = 24))
 
 # there were problem with transparency, I needed to save it as svg and save manually as eps
 

@@ -1,3 +1,5 @@
+# Simple plot for visualizng histograms, I used prettier version in the thesis
+
 rm(list = ls())
 
 set.seed(180620)

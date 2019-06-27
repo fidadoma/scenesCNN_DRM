@@ -169,10 +169,11 @@ p <- df %>%
   #scale_x_continuous("Kvintil", breaks = c(2,3,4), labels = c("2","3","4")) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   xlab("Quintile") + 
+  theme(text = element_text(size = 16)) +
   facet_wrap(~subject_id, ncol = 4)
   
 p
-ggsave(file.path(plots_dir, "Fig_chp3_results_participants.eps"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_results_participants.svg"), p, width = 6, height = 6)
   
 ```
 
@@ -271,7 +272,8 @@ p <- p0 + geom_point(data=predframe,colour="red")+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
   xlab("Distance ratio") + 
-  ylab("Perc. correct")
+  ylab("Perc. correct") +
+  theme(text = element_text(size = 24)) 
 
 p
 ggsave(file.path(plots_dir, "Fig_chp3_results_ratio.svg"), p, width = 6, height = 6)
@@ -307,7 +309,8 @@ onecat_plot <- function(cat_name) {
     theme(aspect.ratio = 1) + 
     xlab("MDS 1") + ylab("MDS 2") + 
     ggtitle(sprintf("Category: %s", cat_name)) +
-    scale_color_manual(values = c("green","blue","red"))
+    scale_color_manual(values = c("green","blue","red")) +
+    theme(text = element_text(size = 20)) 
   p
 }
 bottom_one <- order_category %>% filter(rank == 1)
