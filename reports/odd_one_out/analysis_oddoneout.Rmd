@@ -104,7 +104,7 @@ df %>%
 
 ## Histogram
 
-```{r}
+```{r quintile histograms}
 
 this_cat <- df %>% filter(subject_id == 1, trial_id == 1) %>% pull(category)
 this_center <- df %>% filter(subject_id == 1, trial_id == 1) %>% pull(selected_image)
@@ -134,11 +134,12 @@ p <- df_onecat_distances %>%
   ylab("Count")
 p  
 ggsave(file.path(plots_dir, "Fig_chp3_distance_histogram.svg"), p, width = 6, height = 6)  
+
 ```
 
 ## Visualize
 
-```{r}
+```{r visualize accuracy}
 p <- df %>%
   group_by(subject_id, quintile) %>% 
   summarize(correct = mean(correct)) %>% 
@@ -179,7 +180,7 @@ ggsave(file.path(plots_dir, "Fig_chp3_results_participants.svg"), p, width = 6, 
 
 ## Visualize categories
 
-```{r}
+```{r Visualize categories}
 order_category <- 
   df %>%
   group_by(category,category_type) %>% 
@@ -223,7 +224,7 @@ df_for_onettest %>% group_by(quintile) %>% do(t.test(.$correct, mu = 1/9) %>% br
 
 We are now sampling from the quintiles, we express the distances as ratio of average within group distance and between group distance
 
-```{r}
+```{r distance as ratio}
 n <- nrow(df)
 fc7_names <- colnames(fc7)
 df$d_ratio <- NA_real_ 
@@ -254,11 +255,9 @@ anova(glm2, glm2_null)
 
 ### Visualize glmer
 
+Visualize glmer
+
 ```{r}
-#dredge.models<-dredge(glm2,trace=FALSE,rank="AICc")
-#my.dredge.models<-get.models(dredge.models,subset = T)
-#silly<-model.avg(my.dredge.models,subset=delta<10)
-#predict(silly,type="response")
 
 p0 <- df %>% ggplot(aes(x = d_ratio, y =correct))+
     geom_point(alpha=0.5)
@@ -326,7 +325,7 @@ ggsave(file.path(plots_dir, "Fig_chp3_category_field.svg"), p2, width = 6, heigh
 
 # Aggreement between raters
 
-```{r ICC}
+```{r cohen.kappa}
 ck1 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 1],df$mouse.clicked_name[df$subject_id == 7]))
 ck2 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 8],df$mouse.clicked_name[df$subject_id == 100]))
 ck3 <- psych::cohen.kappa(cbind(df$mouse.clicked_name[df$subject_id == 3],df$mouse.clicked_name[df$subject_id == 9]))
@@ -342,7 +341,7 @@ Average agreement between raters was `r mean(cks) %>% round(2)
 
 ## Metrics
 
-```{r}
+```{r metrics results}
 p <- metrics %>% 
   filter(metric!= "ssim_correct" & metric!= "correct") %>% 
   ggplot(aes(x = quintile, y = value_fc7, col = metric, group = metric)) + 

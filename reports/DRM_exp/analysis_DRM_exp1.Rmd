@@ -252,7 +252,7 @@ df_acc2 %>% group_by(subject_id,type,part) %>% summarize(correct = mean(correct)
 
 ## Analysis for first half and second half with respect to payment
 
-```{r}
+```{r analysis payments}
 trial_ids <- df %>% 
   filter(subject_id == 1) %>% 
   pull(trial_id)
@@ -293,8 +293,8 @@ lm1_nointeraction <- glmer(correct~type+payment+(1+type|subject_id) + (1|categor
 
 lm1_null <- glmer(correct~1+(1+type|subject_id) + (1|category), df, family = binomial())
 
-anova(lm1_justtype,lmnull)
-av1 <- anova(lm1_justpayment,lmnull)
+anova(lm1_justtype,lm1_null)
+av1 <- anova(lm1_justpayment,lm1_null)
 av1
 av1$Chisq
 
@@ -303,9 +303,9 @@ anova(lm1_full,lm1_nointeraction)
 
 ```
 
-```{r payment part lmer }
+```{r payment part lmer}
 
-glmer(correct~type*payment*part+(1+type|subject_id) + (1|category), df_acc2, family = binomial()) %>% summary()
+lm2_full <- glmer(correct~type*payment*part+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
 
 lm2_justpayment <- glmer(correct~payment+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
 
@@ -319,13 +319,13 @@ lm2_nointeraction <- glmer(correct~type+payment+part +(1+type|subject_id) + (1|c
 
 lm2_null <- glmer(correct~1+(1+type|subject_id) + (1|category), df_acc2, family = binomial())
 
-anova(lm1_justtype,lmnull)
-av1 <- anova(lm1_justpayment,lmnull)
+anova(lm2_justtype, lm2_null)
+av1 <- anova(lm2_justpayment, lm2_null)
 av1
 av1$Chisq
 
-anova(lm1_justtype,lm1_nointeraction)
-anova(lm1_full,lm1_nointeraction)
+anova(lm2_justtype, lm2_nointeraction)
+anova(lm2_full, lm2_nointeraction)
 
 ```
 
@@ -399,7 +399,7 @@ ggsave(file.path(plots_dir, "Fig_chp4_results_ROC_oldfar.svg"), p2, width = 6, h
 
 ```
 
-```{r}
+```{r slopes ROC}
 slope_oldclose <- get_ROC_slopes(df_oldclose)
 slope_oldfar <- get_ROC_slopes(df_oldfar)
 intercepts_oldclose <- get_ROC_intercepts(df_oldclose)
@@ -461,7 +461,7 @@ df_plot <- tibble(x = rep(x0,3), y = c(y_close, y_far, y_target), type = rep(c("
 p_SDT_model <- df_plot %>% ggplot(aes(x = x, y = y, col = type)) + geom_path(size = 1.2) + geom_vline(xintercept = 0) +
   theme(aspect.ratio = 1)
 p_SDT_model
-ggsave(file.path(plots_dir, "Fig_chp4_results_dprimedistance.svg"), p_dprimes, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp4_results_dprimedistance.svg"), p_SDT_model, width = 6, height = 6)
 
 (df_dprime_agg$m[df_dprime_agg$type == "close distractor"]-df_dprime_agg$m[df_dprime_agg$type == "target"]) %>% round(2)
 
@@ -472,7 +472,7 @@ ggsave(file.path(plots_dir, "Fig_chp4_results_dprimedistance.svg"), p_dprimes, w
 
 # Per image accuracy
 
-```{r }
+```{r per image accuracy}
 df_perimage <- df %>% group_by(img_name,type) %>% summarize(m = mean(correct), sd = sd(correct)) %>% arrange(-m)
 
 order_category <- 
@@ -515,7 +515,7 @@ dfm <- df_perimage %>% left_join(df_mem,by = "img_name") %>% rename(correct = m)
 
 ## Test 
 
-```{r}
+```{r overall glmer}
 lm1 <- glmer(correct~type+(1+type|subject_id) + (1|category), df %>% filter(type!="target"), family = binomial())
 
 lmnull <- glmer(correct~1+(1+type|subject_id) + (1|category), df %>% filter(type!="target"), family = binomial())
@@ -523,7 +523,7 @@ lmnull <- glmer(correct~1+(1+type|subject_id) + (1|category), df %>% filter(type
 anova(lm1,lmnull)
 ```
 
-```{r}
+```{r one sample tests}
 df_for_onettest <- df %>% group_by(subject_id,type) %>% summarize(correct = mean(correct))
 df_for_onettest %>% group_by(type) %>% do(t.test(.$correct, mu = .5) %>% broom::tidy()) %>% 
   left_join(df_for_onettest %>% group_by(type) %>% do(d=lsr::cohensD(.$correct, mu = .5)) %>% mutate(d = unlist(d)),
