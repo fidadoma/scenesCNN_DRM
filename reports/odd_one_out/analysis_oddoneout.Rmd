@@ -126,14 +126,14 @@ df_segments <- tibble(x = qs[2:6], xend = x, y = 0, yend = 17)
 p <- df_onecat_distances %>% 
   ggplot(aes(x = distance)) + 
   geom_histogram(bins = 30) + 
-  theme(aspect.ratio = 1) +
+  theme(aspect.ratio = 0.5) +
   geom_segment(data = df_segments, aes(x=x,xend=xend,y=y,yend=yend)) +
   annotate(x = qs[3:5]-c(3,1,-0.6), y = c(19,19,19), label = c("2.","3.","4."), geom = "label", size = 5) +
   ggtitle(sprintf("Category: %s",this_cat)) +
   xlab("Distance") +
   ylab("Count")
 p  
-ggsave(file.path(plots_dir, "Fig_chp3_distance_histogram.svg"), p, width = 6, height = 6)  
+ggsave(file.path(plots_dir, "Fig_chp3_distance_histogram.svg"), p, width = 9, height = 6)  
 
 ```
 
@@ -260,11 +260,12 @@ Visualize glmer
 ```{r}
 
 p0 <- df %>% ggplot(aes(x = d_ratio, y =correct))+
-    geom_point(alpha=0.5)
+    geom_point(alpha=0.5, position = position_jitter(height = 0.03))
 
-predframe <- tibble(d_ratio= df$d_ratio)
+predframe <- tibble(d_ratio = df$d_ratio)
 
 predframe$correct <- predict(glm2,newdata=predframe,type="response",re.form=NA)
+
 p <- p0 + geom_point(data=predframe,colour="red")+
   geom_line(data=predframe,colour="red",aes(group=1)) + 
   ylim(0,1)+
@@ -359,7 +360,7 @@ p
 ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7.svg"), p, width = 6, height = 6)
 
 p <- metrics %>% 
-  filter(metric!= "ssim_correct") %>% 
+  filter(metric!= "ssim_correct", metric!= "correct") %>% 
   ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   ylim(0,1)+
@@ -367,9 +368,9 @@ p <- metrics %>%
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
   scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT")) + 
+  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("GIST", "HOG", "RGB", "SIFT")) + 
   stat_summary(fun.y=mean, geom="line") +
-  ggtitle("Predict human peformance")
+  ggtitle("Predict human performance")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
 ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.svg"), p, width = 6, height = 6)
