@@ -50,5 +50,5 @@ df <- df %>% mutate(quintile = as.factor(ifelse(d<=qs[2], 1,
                                                                  ifelse(d<=qs[5], 4, 5)))
                                       ))) %>% 
   filter(d>0)
-df %>% ggplot(aes(x=d, col = quintile, fill = quintile)) + geom_histogram(bins = 30, position="identity") + theme(aspect.ratio = 1) + theme_bw(18)
+df %>% ggplot(aes(x=d, col = quintile, fill = quintile)) + geom_histogram(bins = 30, position="identity") + theme(aspect.ratio = 2) + theme_bw(18)
 
