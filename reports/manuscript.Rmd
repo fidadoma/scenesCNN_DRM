@@ -56,7 +56,7 @@ draft             : no
 
 documentclass     : "apa6"
 classoption       : "man"
-output            : papaja::apa6_pdf
+output            : papaja::apa6_docx
 ---
 
 ```{r setup, include = FALSE}
@@ -91,7 +91,7 @@ Are humans able to understand the inner representation of the convolutional neur
 ## Methods
 
 ### Participants
-Twelve subjects (mean age = 24.83, SD = 3.49, 6 males) participated in this experiment. All of them had normal or corrected-to-normal vision and none of that had participated in this type of experiment before. Subjects were students of Faculty of Arts and participated as a part of a course requirements. All participants gave an informed consent before the experiment. sample size was based on prior power analysis done in software G*Power 3.1.92 [@Faul2009]. We were aiming to detect large effect using one-sample t-tests while having $\alpha$=.05 and power $1-\beta$ = .8, which resulted in the above-mentioned twelve participants.
+Twelve subjects (mean age = 24.83, SD = 3.49, 6 males) participated in this experiment. All of them had normal or corrected-to-normal vision and none of that had participated in this type of experiment before. Subjects were students of Faculty of Arts and participated as a part of a course requirements. All participants gave an informed consent before the experiment. sample size was based on prior power analysis done in software G*Power 3.1.92 [@Faul2009]. We were aiming to detect large effect using one-sample t-tests while having $\alpha$ = .05 and power $1-\beta$ = .8, which resulted in the above-mentioned twelve participants.
 
 ### Stimuli and scene similarity
 
@@ -138,9 +138,9 @@ As each pair of participants received same set of images, we tested, whether the
 
 (ref:odd-results) Average accuracy when detecting odd scene. Left plot shows accuracy for each quintile. Dot shows average accuracy, while vertical lines shows bootstrapped standard error of the mean. The distribution of the data is shown by violin plot. Right part shows fitted generalized linear mixed model when the distance was expressed using ratio of distances.
 
-```{r odd-results, fig.cap = "(ref:odd-results)", fig.align = 'center'}
+```{r odd-results, fig.cap = "(ref:odd-results)", fig.align = 'center', fig.width = 6}
 
-knitr::include_graphics(c(here("plots","Fig_odd_results.png"), here("plots","Fig_odd_results_ratio.png")))
+knitr::include_graphics(here("plots","Fig_odd_results.png"))
 
 ```
 
@@ -193,14 +193,14 @@ Taken together, even with the small sample size, we shown that participants are 
 
 In the main experiment, we focused on the creation of false memories while using the properties of image space defined by CNN. In particular, when memorizing large number of scenes [as in. @konkle2010b], how are the memories organised? Do we form a prototypical representation from the presented stimuli and compare the presented stimuli to this prototype? If the prototype is formed, two conditions should hold. First, the recognition for presented scenes closer to the prototype should be higher. Second, for the non-presented scenes close to the prototype, the false alarm rate should be higher. In this experiment, we focused on the latter condition.
 
-We tested the memory performance in an paradigm inspired by Deese-Roedrigez-McDermott paradigm [DRM, @Deese1959, @Roediger1995]. We presented the scenes and participants task was to memorize then. The similarity defined by image space serves as valid tool how to quantify similarity of stimuli and describe the presented stimuli using the coordinates in image space, where the center of presented stimuli should lie. we queried the subjects with either seen or unseen scenes, while we varied, whether the scenes were closer to the center of the presented scenes or further away. If the visual stimuli are internally represented in a structure showing resemblance to the image space, there should be more false alarms for the distractors closer to the center than for distractors further away from the center, as the center represent the visual prototype [@Posner1970].
+We tested the memory performance in a paradigm inspired by Deese-Roedrigez-McDermott paradigm [DRM; @Deese1959; @Roediger1995]. We presented the scenes and participants task was to memorize then. The similarity defined by image space serves as valid tool how to quantify similarity of stimuli and describe the presented stimuli using the coordinates in image space, where the center of presented stimuli should lie. we queried the subjects with either seen or unseen scenes, while we varied, whether the scenes were closer to the center of the presented scenes or further away. If the visual stimuli are internally represented in a structure showing resemblance to the image space, there should be more false alarms for the distractors closer to the center than for distractors further away from the center, as the center represent the visual prototype [@Posner1970].
 
 
 ## Methods
 
 ### Participants
 
-Twenty-seven subjects participated in the experiment (mean age = 22.96, SD = 4.65, 5 males). All of them had normal or corrected-to-normal eyesight and none of them were colorblind. Twelve subjects participated in exchange for a course credit while remaining 15 participated for financial reward 200 Czech crowns (approximately 8 euros). All participants gave an informed consent before the experiment. Sample size was determined by prior power analysis. We needed 27 subjects for detection of medium effect (Cohen's d = 0.5) using one-sample t-test, $\alpha$=.05 and having power of test 1-$\beta$=0.8. we did not perform power analysis regarding linear mixed models, as there is no scientific consensus, how to proceed in that case. However, the sample size is typical for studies regarding visual perception.
+Twenty-seven subjects participated in the experiment (mean age = 22.96, SD = 4.65, 5 males). All of them had normal or corrected-to-normal eyesight and none of them were colorblind. Twelve subjects participated in exchange for a course credit while remaining 15 participated for financial reward 200 Czech crowns (approximately 8 euros). All participants gave an informed consent before the experiment. Sample size was determined by prior power analysis. We needed 27 subjects for detection of medium effect (Cohen's d = 0.5) using one-sample t-test, $\alpha$ = .05 and having power of test 1 - $\beta$ = 0.8. we did not perform power analysis regarding linear mixed models, as there is no scientific consensus, how to proceed in that case. However, the sample size is typical for studies regarding visual perception.
 
 ### Simuli
 
@@ -208,7 +208,7 @@ We selected the stimuli for the experiment from the database FIGRIM [@bylinskii2
 
 ### Design
 
-whole design is visualized in Figure \@ref(fig:drm-scheme).For each scene category, we first computed the category center. then we divided the scenes by the distances from the center into groups closer than median and farther than median. From the closer group, we randomly selected 15 scenes, which were used in training block. These 15 scenes create a polygon in the image space and therefore we could compute the its center representing average target scene. From the group of closer scenes, we select 5 more scenes closest to the center of the training scenes. These scenes will denoted as *close-distractors*. From the group of farther scenes, we select randomly 5 scenes, which will be denoted as *far-distractors*. Finally, from the training scenes, we selected five which will be presented in testing block. 
+Whole design is visualized in Figure \@ref(fig:drm-scheme). For each scene category, we first computed the category center. then we divided the scenes by the distances from the center into groups closer than median and farther than median. From the closer group, we randomly selected 15 scenes, which were used in training block. These 15 scenes create a polygon in the image space and therefore we could compute the its center representing average target scene. From the group of closer scenes, we select 5 more scenes closest to the center of the training scenes. These scenes will denoted as *close-distractors*. From the group of farther scenes, we select randomly 5 scenes, which will be denoted as *far-distractors*. Finally, from the training scenes, we selected five which will be presented in testing block. 
 Each category was sampled three times, while unique scenes were used for each set.
 
 (ref:drm-scheme) Schema of experimental design. The black x denotes category center and dotted circle group of closer scenes. For randomly selected targets from the closer group (green dots), we compute the center (green x) and select close-distractors (red dots). From the farther scenes, we select far-distractors (blue dots).
@@ -220,7 +220,7 @@ knitr::include_graphics(here("plots","Fig_drm_scheme.png"))
 
 ### Procedure
 
-Experiment was programmed in PsychoPy. Participants were seated approximately 60 cm from the LCD display (22") Experiment consisted alternating parts consisting of training blocks (15 training scenes) and testing blocks (15 scenes). From the 15 testing scenes, five were previously presented target scenes, five were close-distractors and remaining five were far-distractors. Before each training scene, fixation cross was shown for 300 ms. Before the first scene in experimental training block, name of the category was shown instead. In the testing part, participants responded using keyboard. First, they responded using arrow, whether the scene was presented or not. Left arrow denoted presented scene, while right arrow denoted novel scene. Then they rated their confidence on scale "not sure at all", "somewhat sure", and "very sure". The selection of the confidence was again done using arrow keys (down arrow confirmed the selection)-Whole procedure is visualized in Figure \@ref(fig:drm-procedure).
+Experiment was programmed in PsychoPy. Participants were seated approximately 60 cm from the LCD display (22") Experiment consisted alternating parts consisting of training blocks (15 training scenes) and testing blocks (15 scenes). From the 15 testing scenes, five were previously presented target scenes, five were close-distractors and remaining five were far-distractors. Before each training scene, fixation cross was shown for 300 ms. Before the first scene in experimental training block, name of the category was shown instead. In the testing part, participants responded using keyboard. First, they responded using arrow, whether the scene was presented or not. Left arrow denoted presented scene, while right arrow denoted novel scene. Then they rated their confidence on scale "not sure at all", "somewhat sure", and "very sure". The selection of the confidence was again done using arrow keys (down arrow confirmed the selection). Whole procedure is visualized in Figure \@ref(fig:drm-procedure).
 Participants were instructed that the speed of answer is not important, just the accuracy. There were no breaks in the experiment, but participants were instructed to take breaks when needed. Experiment lasted 50-70 minutes.
 
 (ref:drm-procedure) Experimental procedure for one training and testing blog.
@@ -234,7 +234,7 @@ knitr::include_graphics(here("plots","Fig_drm_procedure.png"))
 
 Analysis was again performed in statistical tool R. The differences between three types of scenes (target, close-distractor, far-distractor), with focus on differences between far- and close- distractors, were tested using generalized linear mixed models. Participant id and category id as random factors while keeping the model maximal (both intercept and slope). Similarly as in Experiment 1, we tested the differences against chance level (50%).
 
-We also analyzed the data using Signal detection theory approach [@green1966; @MacmillanNA2004]. Use of confidence ratings allowed us to construct empirical ROC curves with non-unit slopes for discriminating between targets and close-distractors and targets and far-distractors. We expressed the performance using $d_a$ measure as an alternative to traditional $d'$ used in a case of non-unit ROC slopes, which is recommend to be use in memory studies [@Loiotile2015]. Using this approach, the bias is not computed traditionally, but instead the the perceptual distance between scene types is computed [@MacmillanNA2004; @Loiotile2015]. 
+We also analyzed the data using Signal detection theory approach [@green1966; @Macmillan2005]. Use of confidence ratings allowed us to construct empirical ROC curves with non-unit slopes for discriminating between targets and close-distractors and targets and far-distractors. We expressed the performance using $d_a$ measure as an alternative to traditional $d'$ used in a case of non-unit ROC slopes, which is recommend to be use in memory studies [@Loiotile2015]. Using this approach, the bias is not computed traditionally, but instead the the perceptual distance between scene types is computed [@Macmillan2005; @Loiotile2015]. 
 
 ## Results
 
@@ -268,14 +268,14 @@ knitr::include_graphics(here("plots","Fig_drm_results_SDT_model.png"))
 
 The exploration of recognition accuracy per each scene category revealed that easiest were categories bridge and bathroom, while most difficult were badlands and cockpit. Full results are displayed in Figure \@ref(fig:drm-results-category). On the level individual scene, we explored, whether the memory accuracy could be explained by memorability of the photograph [@Isola2011]. The memorability is good candidate to predict the task, because it has been shown that memorable images shows good perceptual organisation [@Goetschalckx2018] and are quickly categorisable [@Broers2017]. Therefore, we evaluated the photographs using trained CNN LaMem, which can predict memorability similarly to the behavioral scores [@khosla2015]. We then computed correlation of memory accuracy with this predicted memorability. The results showed that the correlation was small and significant for targets (_r_ = .10, _p_ = .003)) and for close-distractors(_r_ = .15, _p_ = .007)), while not significant for far-distractors (_r_ = .05, _p_ = .335). Therefore, the effect of memorability is only small. 
 
-(ref:drm-results-category) Moving average for reaction time (size of window was 200 consescutive trials) with respect to id of the trial.
+(ref:drm-results-category) Average accuracy for individual categories.
 
 ```{r drm-results-category, fig.cap = "(ref:drm-results-category)", fig.align = 'center'}
 knitr::include_graphics(here("plots","Fig_drm_results_categories.png"))
 
 ```
 
-We were also interested, whether the recognition of the presented scenes propagated to the time needed to answer. We excluded the responses longer than 5s. Participants tended to make faster responses during the time course of the experiment as visualized in Figure \@ref(fig:drm-results-rt_window). As visualized in Figure \@ref(fig:drm-results-rt), the fastest responses were for far-distractors (mean = 1.09 s, SD = 0.29), followed by target scenes (mean = 1.19 s, SD = 0.21), while slowest responses were for close-distractors (mean = 1.26 s, SD = 0.21). The differences were significant ($\chi^2(1) = 27.8, p < .001$). Pairwise post-hoc analysis with Tukey's correction revealed that the difference in reaction times between targets and close-distractors were not significant (_p_ = .256), while the remaining pairwise differences were significant (p < .001). Moreover, the difference in reaction times between close- and far-distractors was large (Cohen's d = 1.57).
+We were also interested, whether the recognition of the presented scenes propagated to the time needed to answer. We excluded the responses longer than 5s. Participants tended to make faster responses during the time course of the experiment as visualized in Figure \@ref(fig:drm-results-rt-window). As visualized in Figure \@ref(fig:drm-results-rt), the fastest responses were for far-distractors (mean = 1.09 s, SD = 0.29), followed by target scenes (mean = 1.19 s, SD = 0.21), while slowest responses were for close-distractors (mean = 1.26 s, SD = 0.21). The differences were significant ($\chi^2(1) = 27.8, p < .001$). Pairwise post-hoc analysis with Tukey's correction revealed that the difference in reaction times between targets and close-distractors were not significant (_p_ = .256), while the remaining pairwise differences were significant (p < .001). Moreover, the difference in reaction times between close- and far-distractors was large (Cohen's d = 1.57).
 
 (ref:drm-results-rt-window) Moving average for reaction time (size of window was 200 consescutive trials) with respect to id of the trial.
 
@@ -297,7 +297,7 @@ Because the experiment was long and potentially tiring, we analyzed the accuracy
 (ref:drm-results-window-acc) Moving average (N = 200) for recognition accuracy. Accuracy for the distractors was stable, while the accuracy declined approximately after 1000 trial.
 
 ```{r drm-results-window-acc, fig.cap = "(ref:drm-results-window-acc)", fig.align = 'center'}
-knitr::include_graphics(here("plots","Fig_drm_results_rt.png"))
+knitr::include_graphics(here("plots","Fig_drm_results_acc_movavg.png"))
 
 ```
 
@@ -315,7 +315,7 @@ Our research complements findings from scene categorization, which show similar 
 
 # Conclusion
 
-In these two experiments, we explored the possible use of convolutional neural networks as a possible model for representation of the memory. We observed that participants intuitively understand the distances in the image space (Experiment 1) and when we preselect stimuli based on the their distance as estimated by deep features, we can observe typical effects in formation of prototypes. Taken together with our past research using deep features [@lukavsky2017], we believe that measure of perceptual similarity as defined by convolutional neural networks shows promising result as a valid metric.
+In these two experiments, we explored the possible use of convolutional neural networks as a possible model for representation of the memory. We observed that participants intuitively understand the distances in the image space (Experiment 1) and when we preselect stimuli based on the their distance as estimated by deep features, we can observe typical effects in formation of prototypes. Taken together with our past research using deep features [@lukavsky2017], we believe that measure of perceptual similarity as defined by convolutional neural networks shows promising result as a valid metric for scene comparison.
 
 # Acknowledgement
 
