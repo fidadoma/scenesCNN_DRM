@@ -360,7 +360,7 @@ p
 ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7.svg"), p, width = 6, height = 6)
 
 p <- metrics %>% 
-  filter(metric!= "ssim_correct", metric!= "correct") %>% 
+  filter(metric!= "ssim_correct") %>% 
   ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   coord_cartesian(ylim = c(0,0.5)) +
@@ -368,11 +368,7 @@ p <- metrics %>%
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
   scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-<<<<<<< HEAD
-  theme(text = element_text(size=18)) + scale_color_manual(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT"), values = c("#FF7F00","#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
-=======
-  theme(text = element_text(size=18)) + scale_color_discrete(labels = c("GIST", "HOG", "RGB", "SIFT")) + 
->>>>>>> 19ff110de2d37b58c0f509e8abddc463ec18d071
+scale_color_manual(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT"), values = c("#FF7F00","#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
   stat_summary(fun.y=mean, geom="line") +
   ggtitle("Predict human performance")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
