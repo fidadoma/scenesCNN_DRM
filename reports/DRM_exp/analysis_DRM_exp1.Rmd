@@ -24,7 +24,7 @@ Data were preprocesseb by scripts
 
 df <- readRDS(here("data", "exp_DRM1", "results_190509.rds"))
 
-df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants_190509.xlsx"))
+df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants_191016.xlsx"))
 
 plots_dir <- here("plots", "exp_DRM1")
 
