@@ -20,4 +20,4 @@ df_resp <- df %>%
          key_resp = recode(key_resp, left = "old", right = "new")) %>% 
   filter(!is.na(correct))
   
-saveRDS(df_resp, file = here("data/exp_DRM1/results_190509.rds"))
+saveRDS(df_resp, file = here("data/exp_DRM1/results_191017.rds"))
