@@ -32,6 +32,7 @@ if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
 
 df <- df %>% left_join(df_participants, by = c("subject_id"))
 
+df2 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_200219.rds"))
 ```
 
 # Duration of the exp
@@ -73,6 +74,26 @@ df %>% group_by(subject_id, type) %>%
   group_by(type) %>% 
   summarize(m = mean(correct), sd = sd(correct)) %>% 
   knitr::kable(digits = 2)
+```
+
+## New analysis based on review
+
+### Distances from tgt images
+
+```{r}
+df2 <- df2 %>% 
+  rowwise() %>% 
+  mutate(mean_tgt_dist = unlist(dist_to_tgts) %>% mean(),
+         min_tgt_dist = unlist(dist_to_tgts) %>% min())
+df2 %>% 
+  ggplot(aes(x = type, y = mean_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
+
+df2 %>% 
+  ggplot(aes(x = type, y = min_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", col = "red") + 
+  geom_point(alpha = 0.1, position = position_jitter(0.2))
+
 ```
 
 ## And visualize
