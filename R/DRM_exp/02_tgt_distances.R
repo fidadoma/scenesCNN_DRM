@@ -77,3 +77,5 @@ for (i in 1:nrow(df)) {
   tm <- FDhelpers::update.tm(tm)
   FDhelpers::print.tm(tm)
 }
+
+saveRDS(df,file = "data/exp_DRM1/results_with_tgtdistances_200219.rds")
