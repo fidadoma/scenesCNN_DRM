@@ -47,14 +47,22 @@ if(!dir.exists(plots_dir)) {
 categories <- df_files$category %>% unique()
 
 
-df <- readRDS(here("data", "exp_DRM1", "results_200219.rds"))
+df <- readRDS(here("data", "exp_DRM1", "results_200219.rds")) %>% 
+  group_by(subject_id) %>% 
+  mutate(trial_grp = ((trial_id -1)%/%15) -1) %>% 
+  ungroup()
+
 
 df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants_190509.xlsx"))
 
-n_targets_per_category <- 15 
+
+
+
+
 tm <- FDhelpers::create.time.measure(nrow(df))
+
 for (i in 1:nrow(df)) {
-  ix_check <- (1:15)+15*(((df$trial_id[i]-1) %/% 15)-1)
+  ix_check <- (1:15)+15*df$trial_grp[i]
   p_prot <- df_protocols %>% filter(prot_id == df$prot_id[i])
   p_prot_check <- p_prot %>% filter(trial_id %in% ix_check)
   curr_img <- df_figrim_fc7 %>% filter(filename == df$img_name[i])
@@ -62,9 +70,10 @@ for (i in 1:nrow(df)) {
   
   curr_img_vals <- curr_img %>% select(starts_with("V")) %>% as.matrix()
   categ_img_vals <- tgt_imgs %>% select(starts_with("V")) %>% as.matrix()
+  
   df$dist_to_tgts[i] <- list(l2norm(categ_img_vals,curr_img_vals))
+  df$img_coord[i] <- list(curr_img_vals)
+  df$tgt_coord[i] <- list(categ_img_vals)
   tm <- FDhelpers::update.tm(tm)
   FDhelpers::print.tm(tm)
 }
-
-df %>% group_by()
