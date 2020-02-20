@@ -5,7 +5,6 @@ library(tidyverse)
 library(here)
 source(here::here("R","utils.R"))
 
-#load("data/m_figrim_l2.RData")
 load(here::here("data","file_info.RData"))
 load(here::here("data","figrim_vectors.RData"))
 
