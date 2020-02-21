@@ -2,11 +2,12 @@
 
 library(tidyverse)
 library(purrr)
+library(here)
 
-source(here::here("utils.R"))
+source(here("R","utils.R"))
 
-data_pth <- here::here("data", "oddoneout", "results_categ") 
-out_pth <- here::here("data","oddoneout")
+data_pth <- here("data", "oddoneout", "results_categ") 
+out_pth <- here("data","oddoneout")
 
 if(!dir.exists(out_pth)) {
   dir.create(out_pth)
