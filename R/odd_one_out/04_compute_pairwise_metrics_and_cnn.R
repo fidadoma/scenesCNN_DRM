@@ -12,7 +12,7 @@ library(here)
 source(here("R","utils.R"))
 
 load(here("data","konkle_180621.RData"))
-df_metrics <- readRDS(here("data","pairwise_metrics_190611.rds"))
+df_metrics <- readRDS(here("data","oddoneout","pairwise_metrics_190611.rds"))
 
 
 data_pth <- here("data", "oddoneout","results_categ") 
@@ -78,11 +78,16 @@ df2 <- df %>% left_join(df_ordered_outliers2,  by = c("prot_id", "trial_id")) %>
          hog_selected = hog_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
          gist_selected = gist_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
          sift_selected = sift_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image")),
-         pdistRGB_selected = pdistRGB_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image"))
-         )
+         pdistRGB_selected = pdistRGB_top1 == as.numeric(str_remove(df$mouse.clicked_name, "image"))) %>% 
+  rowwise() %>% 
+  mutate(
+         metrics_combined_correct = max(hog_correct,gist_correct,sift_correct,na.rm=T),
+         metrics_combined_selected = max(hog_selected,gist_selected,sift_selected,na.rm=T)) %>% 
+  ungroup()
 
-df3 <- df2 %>% gather(metric, value_fc7, correct, ssim_correct,hog_correct,gist_correct,sift_correct,pdistRGB_correct)
-df3_2 <- df2 %>% gather(metric, value_partic, correct, ssim_selected,hog_selected,gist_selected,sift_selected,pdistRGB_selected)
+df3 <- df2 %>% gather(metric, value_fc7, correct, ssim_correct,hog_correct,gist_correct,sift_correct,pdistRGB_correct, metrics_combined_correct)
+df3_2 <- df2 %>% gather(metric, value_partic, correct, ssim_selected,hog_selected,gist_selected,sift_selected,pdistRGB_selected,metrics_combined_selected)
 df3$value_partic <- df3_2$value_partic
 
 saveRDS(df3, here("data", "oddoneout", "metrics_190614.rds"))
+saveRDS(df2, here("data", "oddoneout", "metrics_wide_190614.rds"))

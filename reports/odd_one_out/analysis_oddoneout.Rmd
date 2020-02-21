@@ -30,7 +30,7 @@ load(here("data","konkle_180621.RData"))
 df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
 metrics <- readRDS(file = here("data", "oddoneout", "metrics_190614.rds"))
-  
+metrics_wide <- readRDS(file = here("data", "oddoneout", "metrics_wide_190614.rds"))
 wrong_trials <- df %>% select(prot_id_version,trial_id,im1:im9) %>% group_by(prot_id_version,trial_id) %>% gather("key", "value",im1:im9) %>% summarize(n = length(unique(value))) %>% filter(n<9) %>% select(-n)
 
 
@@ -56,6 +56,12 @@ if(!dir.exists(plots_dir)) {
 participants %>% 
   summarize(m_age = mean(age),sd_age = sd(age), n_males = sum(gender == "M")) %>% 
   knitr::kable(digits = 2)
+```
+
+# Correlation of metrics
+
+```{r}
+df_metrics %>% select(ssim, hog, gist, sift_sum,pdistRGB) %>%  cor()
 ```
 
 # Duration of the exp
@@ -346,7 +352,7 @@ Average agreement between raters was `r mean(cks) %>% round(2)
 p <- metrics %>% 
   filter(metric!= "ssim_correct" & metric!= "correct") %>% 
   ggplot(aes(x = quintile, y = value_fc7, col = metric, group = metric)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
+  stat_summary(fun.data = "mean_cl_boot", position = position_jitter(0.2)) + 
   theme(aspect.ratio = 1) +
   coord_cartesian(ylim = c(0,0.5)) +
   geom_hline(yintercept = 1/9) +
@@ -374,5 +380,14 @@ scale_color_manual(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT"), values = 
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
 ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.svg"), p, width = 6, height = 6)
+
+```
+
+### Combine metrics
+
+```{r combine metrics}
+metrics_wide %>% 
+  mutate(metrics_combined = max(ssim_correct,hog_correct,gist_correct,sift_correct)) %>% 
+  ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric))
 
 ```

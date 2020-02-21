@@ -34,8 +34,6 @@ df_metrics <- read_csv(here::here("data", "oddoneout","pairwise_metrics_allproto
 
 df_metrics <- df_metrics %>% left_join(df_rgb, by = c("prot_id", "trial_id", "im1", "im2", "im1_id", "im2_id"))
 
-df_metrics %>% select(ssim, hog, gist, sift_sum,pdistRGB) %>%  cor()
-
 saveRDS(df_metrics, here::here("data", "oddoneout","pairwise_metrics_190611.rds"))
 
                                                                       
