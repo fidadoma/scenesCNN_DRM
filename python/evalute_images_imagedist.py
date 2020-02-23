@@ -65,6 +65,10 @@ net1.blobs['data'].reshape(1, 3, 227, 227)
 
 out_l = list()
 loud = True
+
+
+layers = ["conv3","conv5","fc7"]
+
 ### START LOOPIN'
 cur_loop = 1
 
@@ -74,21 +78,22 @@ if loud: print "\ncreating new net"
 if loud: print "loading images: "
 
 for i, f in enumerate(fnames):
-            
-    image = caffe.io.load_image(fdir + "/" + f)
-    net1.blobs['data'].data[:, :,:,:] = transformer1.preprocess('data', image)
+    for curr_layer in layers:        
+        
+        image = caffe.io.load_image(fdir + "/" + f)
+        net1.blobs['data'].data[:, :,:,:] = transformer1.preprocess('data', image)
     
-    if loud: print i,              
+        if loud: print i,              
     
         
-    out1 = net1.forward()
-    if loud: print "- "
+        out1 = net1.forward()
+        if loud: print "- "
 	
-    if loud: print max(out1['prob'][0])	
+        if loud: print max(out1['prob'][0])	
     
-    x = net1.blobs['fc7'].data[0]
-    #out_l.append(x)
-    np.savetxt(os.path.join(out_dir,"figrim_fc7_"+ f + ".txt"), x, delimiter=",")
+        x = net1.blobs[curr_layer].data[0].flatten()
+        #out_l.append(x)
+        np.savetxt(os.path.join(out_dir,"figrim_"+curr_layer+"_"+ f + ".txt"), x, delimiter=",")
 # print out_l
 
 
