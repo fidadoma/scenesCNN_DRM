@@ -3,7 +3,12 @@ eucldist <- function(x1,x2,y1,y2) {
 }
 
 l2norm <- function(M, v2) {
-  apply(M, 1, function(v1) sqrt(sum((v1-v2)^2)))
+  if(!is.matrix(M)) {
+    sqrt(sum((M-v2)^2))
+  } else {
+    apply(M, 1, function(v1) sqrt(sum((v1-v2)^2)))  
+  }
+  
 }
 
 select_images <- function(df_files, n_per_category) {

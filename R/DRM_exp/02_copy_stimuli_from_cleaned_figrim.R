@@ -1,6 +1,9 @@
 # copy images to stimuli directory
+# Figrim can be downloaded from osf directory
+# https://osf.io/sqjbn/
+
 library(tidyverse)
-theme_set(theme_bw())
+theme_set(theme_classic(16))
 library(here)
 
 stimuli_outpth <- here("stimuli_exp1")
@@ -15,8 +18,6 @@ prot_dir <- here("data/exp_DRM1/protocols/")
 
 fs <- list.files(prot_dir, pattern = "*.csv", full.names = T) 
 fs <- fs[!stringr::str_detect(fs,"P000")]
-
-i<-1
 
 df <- sapply(fs, read_csv, simplify=FALSE) %>% bind_rows()
 

@@ -1,4 +1,8 @@
-rm(list = ls())
+# First, download FIGRIM dataset
+
+# it can be downloaded from http://figrim.mit.edu/
+
+# following file creates file struct with filenames
 
 library(tidyverse)
 
@@ -12,3 +16,5 @@ filename <- fs %>% stringr::str_replace(pattern = ".*(sun_.*.jpg)","\\1")
 file_info <- data_frame(category,filename, pth = fs)
 
 save(df_files, file = "data/file_info.RData")
+
+# after that we manually removed outliers from FIGRIM dataset creating FIGRIM2_clean

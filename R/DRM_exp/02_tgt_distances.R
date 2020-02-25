@@ -56,10 +56,13 @@ df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants
 
 
 
+df_coords <- df %>% select(subject_id, trial_id,img_name) %>% 
+  mutate(img_coord = NA, tgt_coord = NA)
 
+df$dist_to_tgts <- NA
+df$dist_to_proto <- NA
 
 tm <- FDhelpers::create.time.measure(nrow(df))
-
 for (i in 1:nrow(df)) {
   ix_check <- (1:15)+15*df$trial_grp[i]
   p_prot <- df_protocols %>% filter(prot_id == df$prot_id[i])
@@ -70,11 +73,23 @@ for (i in 1:nrow(df)) {
   curr_img_vals <- curr_img %>% select(starts_with("V")) %>% as.matrix()
   categ_img_vals <- tgt_imgs %>% select(starts_with("V")) %>% as.matrix()
   
+  colnames(curr_img_vals) <- NULL
+  colnames(categ_img_vals) <- NULL
+  
   df$dist_to_tgts[i] <- list(l2norm(categ_img_vals,curr_img_vals))
-  df$img_coord[i] <- list(curr_img_vals)
-  df$tgt_coord[i] <- list(categ_img_vals)
+  df$dist_to_proto[[i]] <- l2norm(colMeans(categ_img_vals),curr_img_vals)
+  df_coords$img_coord[i] <- list(curr_img_vals)
+  df_coords$tgt_coord[i] <- list(categ_img_vals)
   tm <- FDhelpers::update.tm(tm)
   FDhelpers::print.tm(tm)
 }
 
+# df %>% 
+#   rowwise() %>% 
+#   mutate(tgt_center = list(colMeans(tgt_coord))) %>% 
+#   mutate(proto_dist = l2norm(tgt_center,as.vector(img_coord))) %>% 
+#   select(-img_coord,-tgt_coord) %>% 
+#   cor.test(~proto_dist+correct,.)
+
 saveRDS(df,file = "data/exp_DRM1/results_with_tgtdistances_200219.rds")
+saveRDS(df_coords,file = "data/exp_DRM1/results_img_coords_200219.rds")

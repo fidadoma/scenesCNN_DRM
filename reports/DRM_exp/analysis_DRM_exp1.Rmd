@@ -32,7 +32,7 @@ if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
 
 df <- df %>% left_join(df_participants, by = c("subject_id"))
 
-df2 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_200219.rds"))
+df2 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_fc7_200219.rds"))
 ```
 
 # Duration of the exp
@@ -550,5 +550,13 @@ df_for_onettest %>% group_by(type) %>% do(t.test(.$correct, mu = .5) %>% broom::
   left_join(df_for_onettest %>% group_by(type) %>% do(d=lsr::cohensD(.$correct, mu = .5)) %>% mutate(d = unlist(d)),
             by = "type")
 
+
+```
+
+## Correlation of distance from prototype with accuracy 
+
+```{r Correlation of distance from prototype with accuracy }
+ 
+cor.test(~dist_to_proto+correct, df2)
 
 ```

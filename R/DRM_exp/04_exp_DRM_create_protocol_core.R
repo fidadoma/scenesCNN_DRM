@@ -6,9 +6,8 @@ library(tidyverse)
 
 source(here::here("R","utils.R"))
 
-#load("data/m_figrim_l2.RData")
 load(here::here("data","file_info.RData"))
-load(here::here("data","figrim_vectors.RData"))
+load(here::here("data","figrim_fc7_vectors.RData"))
 
 # we are using cleaned database, we need to clean the figrim data structure as well
 
