@@ -558,5 +558,14 @@ df_for_onettest %>% group_by(type) %>% do(t.test(.$correct, mu = .5) %>% broom::
 ```{r Correlation of distance from prototype with accuracy }
  
 cor.test(~dist_to_proto+correct, df2)
+cor.test(~dist_to_proto+correct, df2 %>% filter(type == "far distractor"))
+cor.test(~dist_to_proto+correct, df2 %>% filter(type == "close distractor"))
+cor.test(~dist_to_proto+correct, df2 %>% filter(type == "target"))
 
+df2 %>% 
+  group_by(subject_id, type) %>% 
+  summarize(correct = mean(correct),
+            dist_to_proto = mean(dist_to_proto)) %>% 
+  ggplot(aes(x=dist_to_proto,y=correct, col = type)) + 
+  geom_point()
 ```
