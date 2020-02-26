@@ -33,6 +33,7 @@ if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
 df <- df %>% left_join(df_participants, by = c("subject_id"))
 
 df2 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_fc7_200219.rds"))
+df2_conv5 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_conv5_200219.rds"))
 ```
 
 # Duration of the exp
@@ -568,4 +569,9 @@ df2 %>%
             dist_to_proto = mean(dist_to_proto)) %>% 
   ggplot(aes(x=dist_to_proto,y=correct, col = type)) + 
   geom_point()
+
+cor.test(~dist_to_proto_conv5+correct, df2_conv5)
+cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "far distractor"))
+cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "close distractor"))
+cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "target"))
 ```
