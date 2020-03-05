@@ -1,0 +1,145 @@
+---
+title: "Analysis after review"
+author: "Filip Dechterenko"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: html_document
+---
+
+# Load libraries
+
+```{r libraries and preparation}
+set.seed(190425)
+library(tidyverse); theme_set(theme_classic(16))
+library(lme4)
+library(here)
+
+source(here("R","utils.R"))
+```
+
+# Load data
+
+Data were preprocesseb by scripts 
+
+```{r load data, warning=FALSE, message=FALSE}
+
+df <- readRDS(here("data", "exp_DRM1", "results_191017.rds"))
+
+df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants_190509.xlsx"))
+
+plots_dir <- here("plots", "exp_DRM1")
+
+if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
+
+df <- df %>% left_join(df_participants, by = c("subject_id"))
+
+df2 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_fc7_200219.rds"))
+df2_conv5 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_conv5_200219.rds"))
+df2_conv3 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_conv3_200219.rds"))
+```
+
+## Correlation of distance from prototype with accuracy 
+
+```{r Correlation of distance from prototype with accuracy }
+ 
+cor.test(~dist_to_proto+correct, df2)
+cor.test(~dist_to_proto+correct, df2 %>% filter(type == "far distractor"))
+cor.test(~dist_to_proto+correct, df2 %>% filter(type == "close distractor"))
+cor.test(~dist_to_proto+correct, df2 %>% filter(type == "target"))
+
+cor.test(~dist_to_proto_conv5+correct, df2_conv5)
+cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "far distractor"))
+cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "close distractor"))
+cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "target"))
+
+```
+
+### Distances from tgt images - fc7
+
+#### fc7
+
+```{r}
+gt0 <- function(x) {x >0}
+
+df2_fc7 <- df2 %>% 
+  rowwise() %>% 
+  mutate(mean_tgt_dist = unlist(dist_to_tgts) %>% mean(),
+         min_tgt_dist = unlist(dist_to_tgts) %>% min(),
+         min_tgt_dist_no0 = unlist(dist_to_tgts) %>% Filter(gt0,.) %>% min())
+df2_fc7 %>% 
+  ggplot(aes(x = type, y = mean_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
+
+df2_fc7 %>% 
+  ggplot(aes(x = type, y = min_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+
+
+df2_fc7 %>% 
+  ggplot(aes(x = type, y = min_tgt_dist_no0)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+
+```
+
+#### Conv5
+
+```{r}
+df2_conv5_agg <- df2_conv5 %>% 
+  rowwise() %>% 
+  mutate(mean_tgt_dist = unlist(dist_to_tgts_conv5) %>% mean(),
+         min_tgt_dist = unlist(dist_to_tgts_conv5) %>% min(),
+         min_tgt_dist_no0 = unlist(dist_to_tgts_conv5) %>% Filter(gt0,.) %>% min())
+
+df2_conv5_agg %>% 
+  ggplot(aes(x = type, y = mean_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
+
+df2_conv5_agg %>% 
+  ggplot(aes(x = type, y = min_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+
+
+df2_conv5_agg %>% 
+  ggplot(aes(x = type, y = min_tgt_dist_no0)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+```
+
+#### Conv3
+
+```{r}
+df2_conv3_agg <- df2_conv3 %>% 
+  rowwise() %>% 
+  mutate(mean_tgt_dist = unlist(dist_to_tgts_conv3) %>% mean(),
+         min_tgt_dist = unlist(dist_to_tgts_conv3) %>% min(),
+         min_tgt_dist_no0 = unlist(dist_to_tgts_conv3) %>% Filter(gt0,.) %>% min())
+
+df2_conv3_agg %>% 
+  ggplot(aes(x = type, y = mean_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
+
+df2_conv3_agg %>% 
+  ggplot(aes(x = type, y = min_tgt_dist)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+
+df2_conv3_agg %>% 
+  ggplot(aes(x = type, y = min_tgt_dist_no0)) + 
+  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+
+```
+
+
+## Load coords conv5
+
+```{r}
+id_subj <- df_participants %>% pull(subject_id) %>% unique()
+coord_pth <- here("data/exp_DRM1/img_coords")
+
+fs <- list.files(coord_pth,pattern = "*_conv5.rds", full.names = T)  
+
+for (i in 1:length(fs)) {
+  fs1 <- fs[i]
+  subj <- readRDS(fs1)
+  
+}
+
+
+```

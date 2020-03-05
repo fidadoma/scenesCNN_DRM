@@ -77,25 +77,7 @@ df %>% group_by(subject_id, type) %>%
   knitr::kable(digits = 2)
 ```
 
-## New analysis based on review
 
-### Distances from tgt images
-
-```{r}
-df2 <- df2 %>% 
-  rowwise() %>% 
-  mutate(mean_tgt_dist = unlist(dist_to_tgts) %>% mean(),
-         min_tgt_dist = unlist(dist_to_tgts) %>% min())
-df2 %>% 
-  ggplot(aes(x = type, y = mean_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
-
-df2 %>% 
-  ggplot(aes(x = type, y = min_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", col = "red") + 
-  geom_point(alpha = 0.1, position = position_jitter(0.2))
-
-```
 
 ## And visualize
 
@@ -563,15 +545,4 @@ cor.test(~dist_to_proto+correct, df2 %>% filter(type == "far distractor"))
 cor.test(~dist_to_proto+correct, df2 %>% filter(type == "close distractor"))
 cor.test(~dist_to_proto+correct, df2 %>% filter(type == "target"))
 
-df2 %>% 
-  group_by(subject_id, type) %>% 
-  summarize(correct = mean(correct),
-            dist_to_proto = mean(dist_to_proto)) %>% 
-  ggplot(aes(x=dist_to_proto,y=correct, col = type)) + 
-  geom_point()
-
-cor.test(~dist_to_proto_conv5+correct, df2_conv5)
-cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "far distractor"))
-cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "close distractor"))
-cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "target"))
 ```

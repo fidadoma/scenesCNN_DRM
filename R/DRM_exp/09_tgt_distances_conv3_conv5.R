@@ -91,7 +91,7 @@ for (i in 1:nrow(df)) {
   }
   
   if(prev_subj!=curr_subj | prev_grp!=curr_grp) { # we need to select the targets only once per group
-    ix_check <- (1:15)+15*curr_grp[i]
+    ix_check <- (1:15)+15*curr_grp
     p_prot <- df_protocols %>% filter(prot_id == df$prot_id[i])
     p_prot_check <- p_prot %>% filter(trial_id %in% ix_check)
     
@@ -107,7 +107,7 @@ for (i in 1:nrow(df)) {
     if(prev_subj!=-1) {
     saveRDS(df_coords_conv3 %>% 
                 filter(subject_id == prev_subj), 
-              sprintf("data/exp_DRM1/img_coords/sub%02d.rds",prev_subj))
+              sprintf("data/exp_DRM1/img_coords/sub%02d_conv3.rds",prev_subj))
     }
     # and reset coords
     df_coords_conv3 <- df %>% select(category,subject_id, trial_id,img_name) %>% 
@@ -176,7 +176,7 @@ for (i in 1:nrow(df)) {
   }
   
   if(prev_subj!=curr_subj | prev_grp!=curr_grp) { # we need to select the targets only once per group
-    ix_check <- (1:15)+15*curr_grp[i]
+    ix_check <- (1:15)+15*curr_grp
     p_prot <- df_protocols %>% filter(prot_id == df$prot_id[i])
     p_prot_check <- p_prot %>% filter(trial_id %in% ix_check)
     
