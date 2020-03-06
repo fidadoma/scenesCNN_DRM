@@ -22,7 +22,7 @@ Data were preprocesseb by scripts
 
 ```{r load data, warning=FALSE, message=FALSE}
 
-df <- readRDS(here("data", "exp_DRM1", "results_191017.rds"))
+df <- readRDS(here("data", "exp_DRM1", "results_after_review_200306.rds"))
 
 df_participants <- readxl::read_excel(here::here("data","exp_DRM1","participants_190509.xlsx"))
 
@@ -32,114 +32,110 @@ if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
 
 df <- df %>% left_join(df_participants, by = c("subject_id"))
 
-df2 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_fc7_200219.rds"))
-df2_conv5 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_conv5_200219.rds"))
-df2_conv3 <- readRDS(here("data/exp_DRM1/results_with_tgtdistances_conv3_200219.rds"))
 ```
 
 ## Correlation of distance from prototype with accuracy 
 
+As we have for each test scene ditance to prototype and accuracy, we can compute correlation between those variables. I am not sure, whether we can aggregate somehow to get averaged accuracies?
+
+Neverethless, we computed correlations for all scenes, followed by correlation for each type separately. We also show one figure with correlations for each layer.
+
 ```{r Correlation of distance from prototype with accuracy }
- 
-cor.test(~dist_to_proto+correct, df2)
-cor.test(~dist_to_proto+correct, df2 %>% filter(type == "far distractor"))
-cor.test(~dist_to_proto+correct, df2 %>% filter(type == "close distractor"))
-cor.test(~dist_to_proto+correct, df2 %>% filter(type == "target"))
+rbind( 
+cor.test(~dist_to_proto+correct, df) %>% broom::tidy() %>% mutate(layer="fc7", type = "all"),
+cor.test(~dist_to_proto+correct, df %>% filter(type == "far distractor")) %>% broom::tidy() %>% mutate(layer="fc7", type = "far distractor"),
+cor.test(~dist_to_proto+correct, df %>% filter(type == "close distractor")) %>% broom::tidy() %>% mutate(layer="fc7", type = "close distractor"),
+cor.test(~dist_to_proto+correct, df %>% filter(type == "target")) %>% broom::tidy() %>% mutate(layer="fc7", type = "all", type = "target"),
+cor.test(~dist_to_proto_conv5+correct, df) %>% broom::tidy() %>% mutate(layer="conv5", type = "all"),
+cor.test(~dist_to_proto_conv5+correct, df %>% filter(type == "far distractor")) %>% broom::tidy() %>% mutate(layer="conv5", type = "far distractor"),
+cor.test(~dist_to_proto_conv5+correct, df %>% filter(type == "close distractor")) %>% broom::tidy() %>% mutate(layer="conv5", type = "close distractor"),
+cor.test(~dist_to_proto_conv5+correct, df %>% filter(type == "target")) %>% broom::tidy() %>% mutate(layer="conv5", type = "all", type = "target"),
+cor.test(~dist_to_proto_conv3+correct, df) %>% broom::tidy() %>% mutate(layer="conv3", type = "all"),
+cor.test(~dist_to_proto_conv3+correct, df %>% filter(type == "far distractor")) %>% broom::tidy() %>% mutate(layer="conv3", type = "far distractor"),
+cor.test(~dist_to_proto_conv3+correct, df %>% filter(type == "close distractor")) %>% broom::tidy() %>% mutate(layer="conv3", type = "close distractor"),
+cor.test(~dist_to_proto_conv3+correct, df %>% filter(type == "target")) %>% broom::tidy() %>% mutate(layer="conv3", type = "all", type = "target")) %>% 
+  select(layer, type, estimate, conf.low, conf.high) %>% 
+  knitr::kable(digits = 2, caption ="correlation between accuracy and distance to prototype")
 
-cor.test(~dist_to_proto_conv5+correct, df2_conv5)
-cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "far distractor"))
-cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "close distractor"))
-cor.test(~dist_to_proto_conv5+correct, df2_conv5 %>% filter(type == "target"))
+df1 <- df %>% pivot_longer(cols = starts_with("dist_to_proto"),names_to = "layer", values_to = "distance_to_proto")
 
+df1_gr <- df1 %>% 
+  group_by(layer, type) %>% 
+  do(c = cor(.$distance_to_proto, .$correct)) %>% 
+  mutate(c = unlist(c)) %>% 
+  mutate(layer = recode(layer, dist_to_proto = "fc7", dist_to_proto_conv3 = "conv3", dist_to_proto_conv5 = "conv5")) %>% 
+  mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) 
+df1_all <- df1 %>% 
+  group_by(layer) %>% 
+  do(c = cor(.$distance_to_proto, .$correct)) %>% 
+  mutate(c = unlist(c)) %>% 
+  mutate(layer = recode(layer, dist_to_proto = "fc7", dist_to_proto_conv3 = "conv3", dist_to_proto_conv5 = "conv5")) %>% 
+  mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) 
+
+df1_gr %>% 
+  ggplot(aes(x = layer, y = c, col = type, group = type)) + 
+  geom_point() + 
+  geom_line() + 
+  ylab("correlation") +
+  ggtitle("Correlation between accuracy and distance to prototype") + 
+  geom_point(data = df1_all, aes(x = layer, y = c, group = 1), col = "black") + 
+  geom_line(data = df1_all, aes(x = layer, y = c, group = 1), col = "black")  
 ```
+
+Figure shows, that correlation is about the same for different layers with exception of far distracators, which decreases with higher layers. Black is for all data
 
 ### Distances from tgt images - fc7
 
-#### fc7
+## Average distance to target
+
+We can compute distance to targets for each test scene. From these values, we can compute average. Because each layer has different ranges, we normalize the distances by dividint them by distance to the target. Lower values than 1 means, that given scene type is closer to targets than targets themselves (e.g. their are more in center).
 
 ```{r}
 gt0 <- function(x) {x >0}
 
-df2_fc7 <- df2 %>% 
+df2 <- df %>% pivot_longer(cols = starts_with("dist_to_tgts"), names_to = "layer", values_to = "distance_to_targets")
+df2_dist_tgt <- df %>% pivot_longer(cols = starts_with("avg_dist_between_tgts"), names_to = "layer", values_to = "avg_dist_between_tgts")
+
+df2 <- df2 %>% left_join(df2_dist_tgt %>% select(subject_id,trial_id), by = c("subject_id", "trial_id"))
+
+df2_tgt <- df2 %>% 
   rowwise() %>% 
-  mutate(mean_tgt_dist = unlist(dist_to_tgts) %>% mean(),
-         min_tgt_dist = unlist(dist_to_tgts) %>% min(),
-         min_tgt_dist_no0 = unlist(dist_to_tgts) %>% Filter(gt0,.) %>% min())
-df2_fc7 %>% 
-  ggplot(aes(x = type, y = mean_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
+  mutate(mean_tgt_dist = unlist(distance_to_targets) %>% mean(),
+         min_tgt_dist = unlist(distance_to_targets) %>% min(),
+         min_tgt_dist_no0 = unlist(distance_to_targets) %>% Filter(gt0,.) %>% min())
 
-df2_fc7 %>% 
-  ggplot(aes(x = type, y = min_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+df2_tgt_agg1 <- df2_tgt %>% 
+    mutate(layer = recode(layer, dist_to_tgts = "fc7", dist_to_tgts_conv3 = "conv3", dist_to_tgts_conv5 = "conv5")) %>% 
+    mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) 
 
+df2_tgt_agg1_ci <- df2_tgt_agg1 %>% 
+  group_by(layer,type) %>% 
+  summarize(m=Hmisc::smean.cl.boot(mean_tgt_dist)[1],lower =Hmisc::smean.cl.boot(mean_tgt_dist)[2], upper = Hmisc::smean.cl.boot(mean_tgt_dist)[3])
 
-df2_fc7 %>% 
-  ggplot(aes(x = type, y = min_tgt_dist_no0)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
+df2_tgt_agg1_ci %>% 
+  group_by(layer) %>% 
+  mutate(m = m/m[type=="target"]) %>% 
+  ggplot(aes(x=layer, y=m,col = type, group = type)) + 
+  geom_point()+geom_line() +
+  ggtitle("Mean distance to targets")
+```
+
+## Minimum distance to target
+
+Alternativelly, we can compute minimum distance of presented scene to one of the targets. We are removing zero distances, as in case of target queries, this minimum would be 0.
+
+```{r Min distance to target}
+df2_tgt_agg2_ci <- df2_tgt_agg1 %>% 
+  group_by(layer,type) %>% 
+  summarize(m=Hmisc::smean.cl.boot(min_tgt_dist_no0)[1],lower =Hmisc::smean.cl.boot(min_tgt_dist_no0)[2], upper = Hmisc::smean.cl.boot(min_tgt_dist_no0)[3])
+
+df2_tgt_agg2_ci %>% 
+  group_by(layer) %>% 
+  mutate(m = m/m[type=="target"]) %>% 
+  ggplot(aes(x=layer, y=m,col = type, group = type)) + 
+  geom_point()+geom_line() +
+  ggtitle("Minimum distance to targets (identities excluded)")
 
 ```
 
-#### Conv5
-
-```{r}
-df2_conv5_agg <- df2_conv5 %>% 
-  rowwise() %>% 
-  mutate(mean_tgt_dist = unlist(dist_to_tgts_conv5) %>% mean(),
-         min_tgt_dist = unlist(dist_to_tgts_conv5) %>% min(),
-         min_tgt_dist_no0 = unlist(dist_to_tgts_conv5) %>% Filter(gt0,.) %>% min())
-
-df2_conv5_agg %>% 
-  ggplot(aes(x = type, y = mean_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
-
-df2_conv5_agg %>% 
-  ggplot(aes(x = type, y = min_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
-
-
-df2_conv5_agg %>% 
-  ggplot(aes(x = type, y = min_tgt_dist_no0)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
-```
-
-#### Conv3
-
-```{r}
-df2_conv3_agg <- df2_conv3 %>% 
-  rowwise() %>% 
-  mutate(mean_tgt_dist = unlist(dist_to_tgts_conv3) %>% mean(),
-         min_tgt_dist = unlist(dist_to_tgts_conv3) %>% min(),
-         min_tgt_dist_no0 = unlist(dist_to_tgts_conv3) %>% Filter(gt0,.) %>% min())
-
-df2_conv3_agg %>% 
-  ggplot(aes(x = type, y = mean_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5) 
-
-df2_conv3_agg %>% 
-  ggplot(aes(x = type, y = min_tgt_dist)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
-
-df2_conv3_agg %>% 
-  ggplot(aes(x = type, y = min_tgt_dist_no0)) + 
-  stat_summary(fun.data = "mean_cl_boot", size = 1.5)
-
-```
-
-
-## Load coords conv5
-
-```{r}
-id_subj <- df_participants %>% pull(subject_id) %>% unique()
-coord_pth <- here("data/exp_DRM1/img_coords")
-
-fs <- list.files(coord_pth,pattern = "*_conv5.rds", full.names = T)  
-
-for (i in 1:length(fs)) {
-  fs1 <- fs[i]
-  subj <- readRDS(fs1)
-  
-}
-
-
-```
+Figure shows that types of images get closer to each other in lower layers.
