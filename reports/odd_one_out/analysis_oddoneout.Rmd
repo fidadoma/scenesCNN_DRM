@@ -29,8 +29,8 @@ load(here("data","konkle_180621.RData"))
 
 df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
-metrics <- readRDS(file = here("data", "oddoneout", "metrics_190614.rds"))
-metrics_wide <- readRDS(file = here("data", "oddoneout", "metrics_wide_190614.rds"))
+metrics <- readRDS(file = here("data", "oddoneout", "metrics_200317.rds"))
+metrics_wide <- readRDS(file = here("data", "oddoneout", "metrics_wide_200317.rds"))
 wrong_trials <- df %>% select(prot_id_version,trial_id,im1:im9) %>% group_by(prot_id_version,trial_id) %>% gather("key", "value",im1:im9) %>% summarize(n = length(unique(value))) %>% filter(n<9) %>% select(-n)
 
 
@@ -349,6 +349,8 @@ Average agreement between raters was `r mean(cks) %>% round(2)
 ## Metrics
 
 ```{r metrics results}
+metrics <- metrics %>% filter(metric!= "ssim_correct")
+
 p <- metrics %>% 
   filter(metric!= "ssim_correct" & metric!= "correct") %>% 
   ggplot(aes(x = quintile, y = value_fc7, col = metric, group = metric)) + 
@@ -386,8 +388,63 @@ ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.svg"), p, width = 6, 
 ### Combine metrics
 
 ```{r combine metrics}
-metrics_wide %>% 
-  mutate(metrics_combined = max(ssim_correct,hog_correct,gist_correct,sift_correct)) %>% 
-  ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric))
+metrics %>% 
+  ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  stat_summary(fun.y = "mean", geom = "line") + 
+  coord_cartesian(ylim = c(0,0.5)) +
+  theme(aspect.ratio = 1) +
+  geom_hline(yintercept = 1/9)
+
+metrics %>% 
+  
+  ggplot(aes(x = quintile, y = value_partic_top3, col = metric, group = metric)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  stat_summary(fun.y = "mean", geom = "line")+
+  coord_cartesian(ylim = c(0,0.5)) +
+  theme(aspect.ratio = 1)
+
+```
+
+### Test differences between metrics
+
+```{r test differences between metrics}
+x <- metrics %>% filter(!is.infinite(value_partic)) %>% select(value_partic, subject_id,quintile,metric)
+
+x[complete.cases(x),] %>% 
+ez::ezANOVA(dv = value_partic, 
+              wid = subject_id,
+              within=.(quintile,metric))
+
+x <- metrics %>% filter(!is.infinite(value_fc7)) %>% select(value_fc7, subject_id,quintile,metric,category)
+
+x[complete.cases(x),] %>% 
+ez::ezANOVA(dv = value_fc7, 
+              wid = subject_id,
+              within=.(quintile,metric))
+
+```
+
+## Individual differences 
+
+Did some participants showed similar pattern as the cnn?
+
+```{r}
+metrics %>% 
+  mutate(quintile = as_factor(quintile)) %>% 
+  ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  stat_summary(fun.y = "mean", geom = "line")+
+  coord_cartesian(ylim = c(0,1)) +
+  facet_wrap(~subject_id, ncol = 5)
+
+metrics %>% 
+  mutate(quintile = as_factor(quintile)) %>% 
+  ggplot(aes(x = quintile, y = value_fc7, col = metric, group = metric)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  stat_summary(fun.y = "mean", geom = "line")+
+  coord_cartesian(ylim = c(0,1)) +
+  facet_wrap(~subject_id, ncol = 5)
+  
 
 ```

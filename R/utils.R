@@ -1,3 +1,20 @@
+select_max <- function(dfx) {
+  tb <- table(c(dfx$ssim_top1[1], dfx$gist_top1[1],dfx$sift_top1[1],dfx$pdistRGB_top1[1]))
+  tb <- sort(tb,decreasing = T)
+  
+  if(sum(tb==tb[1])>1) {
+    metrics_max <- NA
+  } else {
+    metrics_max <- (names(tb[1]) %>% as.numeric())
+    if(is_empty(metrics_max)) {
+      metrics_max <- NA
+    }
+  }
+  metrics_max
+}
+
+
+
 eucldist <- function(x1,x2,y1,y2) {
   sqrt(sum((x1-x2)^2) + sum((y1-y2)^2))
 }
@@ -92,9 +109,11 @@ get_top1 <- function(x) {
 get_top3 <- function(x) {
   x <- x %>% strsplit(split = " ") %>% unlist() %>% as.numeric()
   top1 <- x %>% which.max()
-  x[top1] 
-  top2 <- x %>% strsplit(split = " ") %>% unlist() %>% as.numeric() %>% which.max()
-  
+  x[top1] <- -1 
+  top2 <- x %>% which.max()
+  x[top2] <- -1
+  top3 <- x %>% which.max()
+  c(top1,top2,top3)
 }
 
 trial_id_with_gaps <- function(from = 1, to = 15, gapsize = 15, ngaps = 10) {
