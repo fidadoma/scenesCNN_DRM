@@ -9,10 +9,11 @@ output: html_document
 
 ```{r load libraries, warning=FALSE,message=FALSE}
 set.seed(167)
-library(tidyverse); theme_set(theme_classic(24))
+library(tidyverse); theme_set(theme_classic(20))
 library(lme4)
 library(MuMIn)
 library(here)
+library(emmeans)
 
 source(here("R","utils.R"))
 ```
@@ -38,7 +39,9 @@ df_withoutwrong <- df %>% anti_join(wrong_trials, by = c("prot_id_version","tria
 
 participants <- readxl::read_excel(here("data","oddoneout","oddoneout_participants.xlsx"))
 
+metrics_fc7 <- readRDS(here("data", "oddoneout", "metrics_fc7_only_200407.rds"))
 
+upperbound_subject <- readRDS(here("data", "oddoneout", "upperbound_subjects.rds"))
 ```
 
 ```{r create plot dir}
@@ -146,6 +149,8 @@ ggsave(file.path(plots_dir, "Fig_chp3_distance_histogram.svg"), p, width = 9, he
 ## Visualize
 
 ```{r visualize accuracy}
+
+
 p <- df %>%
   group_by(subject_id, quintile) %>% 
   summarize(correct = mean(correct)) %>% 
@@ -163,7 +168,7 @@ p <- df %>%
   
   
 p
-ggsave(file.path(plots_dir, "Fig_chp3_results.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Figure1_results_left.svg"), p, width = 6, height = 6)
 
 p <- df %>%
   mutate(quintile = as.factor(quintile)) %>% 
@@ -277,7 +282,7 @@ p <- p0 + geom_point(data=predframe,colour="red")+
   ylim(0,1)+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
-  xlab("Distance ratio") + 
+  xlab("Distance ratio") + s
   ylab("Perc. correct") +
   theme(text = element_text(size = 24)) 
 
@@ -350,41 +355,49 @@ Average agreement between raters was `r mean(cks) %>% round(2)
 
 ```{r metrics results}
 metrics <- metrics %>% filter(metric!= "ssim_correct")
+metrics2 <- metrics %>% 
+  select(metric, value_fc7, value_partic,value_fc7_top3,quintile) %>% 
+  rbind(metrics_fc7 %>% mutate(metric = "baseline", value_fc7 = as.numeric(top1_outl_fc7 == target_position), value_fc7_top3 = top3_outl_fc7_correct, value_partic = NA) %>% select(metric, value_fc7, value_fc7_top3,value_partic,quintile))
 
-p <- metrics %>% 
-  filter(metric!= "ssim_correct" & metric!= "correct") %>% 
+metrics2 <- metrics2 %>% rbind(upperbound_subject %>% ungroup %>% mutate(value_partic = correct, value_fc7 = NA, value_fc7_top3 = NA, metric = "upper bound") %>% select(metric, value_fc7, value_partic,value_fc7_top3, quintile)) 
+
+p <- 
+  metrics2 %>% 
+  filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
   ggplot(aes(x = quintile, y = value_fc7, col = metric, group = metric)) + 
-  stat_summary(fun.data = "mean_cl_boot", position = position_jitter(0.2)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
   theme(aspect.ratio = 1) +
-  coord_cartesian(ylim = c(0,0.5)) +
+  coord_cartesian(ylim = c(0,1)) +
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-  theme(text = element_text(size=18)) + scale_color_manual(labels = c("GIST", "HOG", "RGB", "SIFT"), values = c("#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
+  scale_x_discrete("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
+  theme(text = element_text(size=18)) + scale_color_manual(labels = c("upper bound", "GIST", "HOG", "RGB", "SIFT"), values = c("black","#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
   stat_summary(fun.y=mean, geom="line") +
   ggtitle("Predict CNN")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
 ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7_noleg.svg"), p+theme(legend.position="none"), width = 6, height = 6)
 
-p <- metrics %>% 
-  filter(metric!= "ssim_correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
+p <- metrics2 %>% 
+  filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
   ggplot(aes(x = quintile, y = value_partic, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   coord_cartesian(ylim = c(0,0.5)) +
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
   ylab("Perc. correct") +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-scale_color_manual(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT"), values = c("#FF7F00","#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
+  scale_x_discrete("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
+scale_color_manual(labels = c("GIST", "HOG", "RGB", "SIFT","upper bound"), values = c("#E41A1C","#377EB8","#4DAF4A","#984EA3","black")) + # humans - "#FF7F00",
   stat_summary(fun.y=mean, geom="line") +
+  theme(text = element_text(size=18))+
   ggtitle("Predict human performance")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
 ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman_noleg.svg"), p+theme(legend.position="none"), width = 6, height = 6)
 
 p <- metrics %>% 
-  filter(metric!= "ssim_correct") %>% 
   ggplot(aes(x = quintile, y = value_partic_top3, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
   coord_cartesian(ylim = c(0,0.5)) +
@@ -392,26 +405,31 @@ p <- metrics %>%
   geom_hline(yintercept = 1/3) +
   ylab("Perc. correct") +
   scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-scale_color_manual(labels = c("Humans", "GIST", "HOG", "RGB", "SIFT"), values = c("#FF7F00","#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
+scale_color_manual(labels = c("GIST", "HOG", "RGB", "SIFT"), values = c("#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
   stat_summary(fun.y=mean, geom="line") +
+  theme(text = element_text(size=18))+
   ggtitle("Predict human performance")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman_top3.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_predicthuman_top3_noleg.svg"), p+theme(legend.position="none"), width = 6, height = 6)
 
-p <- metrics %>% 
-  filter(metric!= "ssim_correct") %>% 
+p <- metrics2 %>% 
   ggplot(aes(x = quintile, y = value_fc7_top3, col = metric, group = metric)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
-  coord_cartesian(ylim = c(0,0.5)) +
+  coord_cartesian(ylim = c(0,1)) +
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/3) +
   ylab("Perc. correct") +
-  scale_x_continuous("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
-theme(text = element_text(size=18)) + scale_color_manual(labels = c("GIST", "HOG", "RGB", "SIFT"), values = c("#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
+  scale_x_discrete("Quintile", breaks = c(2,3,4), labels = c("2","3","4")) +
+theme(text = element_text(size=18)) + 
+  scale_color_manual(labels = c("upper bound", "GIST", "HOG", "RGB", "SIFT"), values = c("black","#E41A1C","#377EB8","#4DAF4A","#984EA3")) + 
   stat_summary(fun.y=mean, geom="line") +
   ggtitle("Predict CNN")
   #theme(legend.justification = c(1,1), legend.position=c(0.99,0.99))
 p
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7_top3.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_chp3_metrics_explanation_fc7_top3_noleg.svg"), p+theme(legend.position="none"), width = 6, height = 6)
 ```
 
 ### Combine metrics
@@ -433,25 +451,69 @@ metrics %>%
   coord_cartesian(ylim = c(0,0.5)) +
   theme(aspect.ratio = 1)
 
+metrics %>%
+  filter(metric == "metrics_combined_correct") %>% 
+  group_by(quintile) %>% 
+  filter(!is.infinite(value_fc7)) %>% 
+  summarize(value_fc7 = mean(value_fc7, na.rm = T),
+            value_partic = mean(value_partic, na.rm = T))
 ```
 
 ### Test differences between metrics
 
 ```{r test differences between metrics}
-x <- metrics %>% filter(!is.infinite(value_partic)) %>% select(value_partic, subject_id,quintile,metric)
 
-x[complete.cases(x),] %>% 
-ez::ezANOVA(dv = value_partic, 
-              wid = subject_id,
-              within=.(quintile,metric))
+aov_value_partic <- 
+  metrics %>% filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
+  mutate(quintile = as.character(quintile)) %>% 
+lme4::lmer(value_partic ~ quintile*metric + (1|subject_id),.)
 
-x <- metrics %>% filter(!is.infinite(value_fc7)) %>% select(value_fc7, subject_id,quintile,metric,category)
+emm_partic_top1 <- emmeans(aov_value_partic, ~ metric | quintile, lmer.df = "asymptotic")
+eff_partic_top1 <- eff_size(emm_partic_top1, sigma = sigma(aov_value_partic), edf = df.residual(aov_value_partic))
 
-x[complete.cases(x),] %>% 
-ez::ezANOVA(dv = value_fc7, 
-              wid = subject_id,
-              within=.(quintile,metric))
+aov_value_fc7 <- 
+  metrics %>% filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
+  mutate(quintile = as.character(quintile)) %>% 
+lme4::lmer(value_fc7 ~ quintile*metric +(1|subject_id),.)
 
+emm_fc7_top1 <- emmeans(aov_value_fc7, ~ metric | quintile, lmer.df = "asymptotic")
+eff_fc7_top1 <- eff_size(emm_fc7_top1, sigma = sigma(aov_value_fc7), edf = df.residual(aov_value_fc7))
+
+aov_value_partic_top3 <- 
+  metrics %>% filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
+  mutate(quintile = as.character(quintile)) %>% 
+lme4::lmer(value_partic_top3 ~ quintile*metric + (1|subject_id),.)
+
+emm_partic_top3 <- emmeans(aov_value_partic_top3, ~ metric | quintile, lmer.df = "asymptotic")
+eff_partic_top3 <- eff_size(emm_partic_top3, sigma = sigma(aov_value_partic_top3), edf = df.residual(aov_value_partic_top3))
+
+
+
+aov_value_fc7_top3 <- 
+  metrics %>% filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
+  mutate(quintile = as.character(quintile)) %>% 
+lme4::lmer(value_fc7_top3 ~ quintile*metric +(1|subject_id),.)
+
+emm_fc7_top3 <- emmeans(aov_value_fc7_top3, ~ metric | quintile, lmer.df = "asymptotic")
+eff_fc7_top3 <- eff_size(emm_fc7_top3, sigma = sigma(aov_value_fc7_top3), edf = df.residual(aov_value_fc7_top3))
+
+rbind(eff_partic_top1 %>% as.data.frame(),
+      eff_fc7_top1 %>% as.data.frame()) %>% 
+  pull(effect.size) %>% abs() %>% range()
+rbind(eff_partic_top3 %>% as.data.frame(),
+      eff_fc7_top3 %>% as.data.frame()) %>% 
+  pull(effect.size) %>% abs() %>% range()
+
+
+```
+
+### Test metrics on chance level
+
+```{r test metrics on chance level}
+ metrics %>% filter(metric!= "correct", metric != "metrics_combined_correct", metric != "metrics_max_correct") %>% 
+  filter(quintile == 2) %>% 
+  group_by(metric) %>% 
+  do(t.test(x = .$value_fc7_top3, mu = 1/3) %>% broom::tidy())
 ```
 
 ## Individual differences 
@@ -475,5 +537,9 @@ metrics %>%
   coord_cartesian(ylim = c(0,1)) +
   facet_wrap(~subject_id, ncol = 5)
   
-
+df %>% 
+  group_by(quintile,subject_id) %>% 
+  summarize(correct = mean(correct)) %>% 
+  arrange(-correct)
 ```
+

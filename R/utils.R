@@ -98,22 +98,27 @@ order_outliers <- function(df1, v) {
   df1$v <- df1[[v]]
   gr1 <- df1 %>% select(im1,im2, v) %>% spread(im1,v) %>% select(-im2) %>% as.matrix() 
   rownames(gr1) <- colnames(gr1)
+  
   DMwR::outliers.ranking(as.dist(gr1), clus=list(dist='euclidean',alg='hclust',meth = "ward.D"))
   
 }
 
 get_top1 <- function(x) {
-  x %>% strsplit(split = " ") %>% unlist() %>% as.numeric() %>% which.max()
+  aa <- x %>% strsplit(split = " ") %>% unlist() %>% as.numeric() 
+  aa[1]
+  
   
 }
 get_top3 <- function(x) {
-  x <- x %>% strsplit(split = " ") %>% unlist() %>% as.numeric()
-  top1 <- x %>% which.max()
-  x[top1] <- -1 
-  top2 <- x %>% which.max()
-  x[top2] <- -1
-  top3 <- x %>% which.max()
-  c(top1,top2,top3)
+  #x <- x %>% strsplit(split = " ") %>% unlist() %>% as.numeric()
+  #top1 <- x %>% which.max()
+  #x[top1] <- -1 
+  #top2 <- x %>% which.max()
+  #x[top2] <- -1
+  #top3 <- x %>% which.max()
+  #c(top1,top2,top3)
+  aa <- x %>% strsplit(split = " ") %>% unlist() %>% as.numeric() 
+  aa[1:3]
 }
 
 trial_id_with_gaps <- function(from = 1, to = 15, gapsize = 15, ngaps = 10) {

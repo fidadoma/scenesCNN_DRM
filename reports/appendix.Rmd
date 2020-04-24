@@ -1,0 +1,204 @@
+---
+title: "Appendix"
+author: "Filip Děchtěrenko"
+date: "24 4 2020"
+output: html_document
+---
+
+```{r setup}
+set.seed(190425)
+library(tidyverse); theme_set(theme_classic(16))
+library(lme4)
+library(here)
+
+source(here("R","utils.R"))
+
+plots_dir <- here("plots", "exp_DRM1")
+
+if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
+
+
+gt0 <- function(x) {x >0}
+
+df2 <- df %>% pivot_longer(cols = starts_with("dist_to_tgts"), names_to = "layer", values_to = "distance_to_targets")
+df2_dist_tgt <- df %>% pivot_longer(cols = starts_with("avg_dist_between_tgts"), names_to = "layer", values_to = "avg_dist_between_tgts")
+
+df2 <- df2 %>% left_join(df2_dist_tgt %>% select(subject_id,trial_id), by = c("subject_id", "trial_id"))
+
+df2_tgt <- df2 %>% 
+  rowwise() %>% 
+  mutate(mean_tgt_dist = unlist(distance_to_targets) %>% mean(),
+         min_tgt_dist = unlist(distance_to_targets) %>% min(),
+         min_tgt_dist_no0 = unlist(distance_to_targets) %>% Filter(gt0,.) %>% min()) %>% 
+  ungroup() %>% 
+  distinct()
+
+
+divide_into_groups_tgt_dist_mean <- function(dfxx) {
+  
+  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
+  
+  rnk <- rank(dfxx_notgt$mean_tgt_dist)
+  
+  dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
+  dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
+  
+  dfxx %>% 
+    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
+    mutate(model_type = if_else(type == "target","target",model_type))
+}
+divide_into_groups_tgt_dist_min_no0 <- function(dfxx) {
+  
+  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
+  
+  rnk <- rank(dfxx_notgt$min_tgt_dist_no0)
+  
+  dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
+  dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
+  
+  dfxx %>% 
+    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
+    mutate(model_type = if_else(type == "target","target",model_type))
+}
+
+
+
+```
+
+```{r}
+df2_tgt_fc7 <- df2_tgt %>% 
+  filter(layer == "dist_to_tgts")
+
+df2_tgt_conv3 <- df2_tgt %>% 
+  filter(layer == "dist_to_tgts_conv3")
+
+df2_tgt_conv5 <- df2_tgt %>% 
+  filter(layer == "dist_to_tgts_conv5")
+
+```
+
+# Conv5
+
+## Divide distractors by distance to targets - mean, conv5
+
+```{r}
+
+
+df2_tgt_modeldist_conv5_mean <- df2_tgt_conv5 %>% 
+  group_by(subject_id,grp_order) %>% 
+  do(divide_into_groups_tgt_dist_mean(.))
+
+df2_tgt_modeldist_conv5_mean %>% xtabs(~type+model_type,.) %>% prop.table(1)
+df2_tgt_modeldist_conv5_mean %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
+df2_tgt_modeldist_conv5_mean %>% filter(type != "target") %>% 
+  group_by(model_type) %>% 
+  summarize(correct = mean(correct))
+
+df2_tgt_modeldist_conv5_mean %>% filter(type != "target") %>% 
+  group_by(type) %>% 
+  summarize(correct = mean(correct))
+
+```
+
+## Divide distractors by distance to targets - min_no0, conv5
+
+```{r}
+
+
+df2_tgt_modeldist_conv5_min_no0 <- df2_tgt_conv5 %>% 
+  group_by(subject_id,grp_order) %>% 
+  do(divide_into_groups_tgt_dist_min_no0(.))
+
+df2_tgt_modeldist_conv5_min_no0 %>% xtabs(~type+model_type,.) %>% prop.table(1)
+df2_tgt_modeldist_conv5_min_no0 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
+df2_tgt_modeldist_conv5_min_no0 %>% filter(type != "target") %>% 
+  group_by(model_type) %>% 
+  summarize(correct = mean(correct))
+
+df2_tgt_modeldist_conv5_min_no0 %>% filter(type != "target") %>% 
+  group_by(type) %>% 
+  summarize(correct = mean(correct))
+
+```
+
+# Conv3
+
+## Divide distractors by distance to targets - mean, conv3
+
+```{r}
+
+
+df2_tgt_modeldist_conv3_mean <- df2_tgt_conv3 %>% 
+  group_by(subject_id,grp_order) %>% 
+  do(divide_into_groups_tgt_dist_mean(.))
+
+df2_tgt_modeldist_conv3_mean %>% xtabs(~type+model_type,.) %>% prop.table(1)
+df2_tgt_modeldist_conv3_mean %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
+df2_tgt_modeldist_conv3_mean %>% filter(type != "target") %>% 
+  group_by(model_type) %>% 
+  summarize(correct = mean(correct))
+
+df2_tgt_modeldist_conv3_mean %>% filter(type != "target") %>% 
+  group_by(type) %>% 
+  summarize(correct = mean(correct))
+
+```
+
+## Divide distractors by distance to targets - min_no0, conv3
+
+```{r}
+
+
+df2_tgt_modeldist_conv3_min_no0 <- df2_tgt_conv3 %>% 
+  group_by(subject_id,grp_order) %>% 
+  do(divide_into_groups_tgt_dist_min_no0(.))
+
+df2_tgt_modeldist_conv3_min_no0 %>% xtabs(~type+model_type,.) %>% prop.table(1)
+df2_tgt_modeldist_conv3_min_no0 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
+df2_tgt_modeldist_conv3_min_no0 %>% filter(type != "target") %>% 
+  group_by(model_type) %>% 
+  summarize(correct = mean(correct))
+
+df2_tgt_modeldist_conv3_min_no0 %>% filter(type != "target") %>% 
+  group_by(type) %>% 
+  summarize(correct = mean(correct))
+
+```
+
+# Figures
+
+```{r}
+df2_tgt_agg1 <- df2_tgt %>% 
+    mutate(layer = recode(layer, dist_to_tgts = "fc7", dist_to_tgts_conv3 = "conv3", dist_to_tgts_conv5 = "conv5")) %>% 
+    mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) 
+
+df2_tgt_agg1_ci <- df2_tgt_agg1 %>% 
+  group_by(layer,type) %>% 
+    summarize(m=Hmisc::smean.cl.boot(mean_tgt_dist)[1],lower =Hmisc::smean.cl.boot(mean_tgt_dist)[2], upper = Hmisc::smean.cl.boot(mean_tgt_dist)[3])
+
+p <- df2_tgt_agg1_ci %>% 
+  group_by(layer) %>% 
+  mutate(upper = upper/upper[type=="target"], lower = lower/lower[type=="target"], m = m/m[type=="target"]) %>% 
+  ggplot(aes(x=layer, y=m,col = type, group = type)) + 
+  geom_point()+geom_line() +
+  geom_linerange(aes(ymin=lower,ymax=upper))+
+  ylab("Normalized average distance to targets") + 
+  theme(aspect.ratio = 1)
+p
+ggsave(file.path(plots_dir, "XXAppDistances_mean.svg"), p, width = 6, height = 6)
+
+df2_tgt_agg2_ci <- df2_tgt_agg1 %>% 
+  group_by(layer,type) %>% 
+  summarize(m=Hmisc::smean.cl.boot(min_tgt_dist_no0)[1],lower =Hmisc::smean.cl.boot(min_tgt_dist_no0)[2], upper = Hmisc::smean.cl.boot(min_tgt_dist_no0)[3])
+
+p <- df2_tgt_agg2_ci %>% 
+  group_by(layer) %>% 
+  mutate(upper = upper/upper[type=="target"], lower = lower/lower[type=="target"], m = m/m[type=="target"]) %>% 
+  ggplot(aes(x=layer, y=m,col = type, group = type)) + 
+  geom_point()+geom_line() +
+  geom_linerange(aes(ymin=lower,ymax=upper))+
+  ylab("Normalized minimum distance to targets") + 
+  theme(aspect.ratio = 1)
+p
+ggsave(file.path(plots_dir, "XXAppDistances_min.svg"), p, width = 6, height = 6)
+```
