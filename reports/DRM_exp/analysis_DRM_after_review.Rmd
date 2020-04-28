@@ -698,3 +698,16 @@ models_list %>%
 models_list %>% 
   map_dbl(AIC)
 ```
+
+## Context entropy
+
+```{r}
+cont_entropy <- read_csv(here("data/exp_DRM1/cats_entrophy.csv"), col_names = F) %>% rename(category = X1, cont_entropy = X2) %>% mutate(category = str_replace(category, "_", " "))
+df_cont_entropy <- df %>% left_join(cont_entropy, by = "category") 
+df_cont_entropy %>% 
+  ggplot(aes(x = category, y = correct, col = type, group = type)) + 
+  stat_summary(fun.data = "mean_cl_boot") + 
+  stat_summary(fun.y = "mean", geom = "line") + 
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+```
