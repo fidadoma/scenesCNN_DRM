@@ -707,7 +707,35 @@ df_cont_entropy <- df %>% left_join(cont_entropy, by = "category")
 df_cont_entropy %>% 
   ggplot(aes(x = category, y = correct, col = type, group = type)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
-  stat_summary(fun.y = "mean", geom = "line") + 
-  scale_x_discrete(guide = guide_axis(n.dodge=3))
+  stat_summary(fun.y = "mean", geom = "line")
+
+df_cont_entropy %>% 
+  filter(type != "target") %>% 
+  group_by(category,type) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  group_by(category) %>% 
+  summarize(diff_FA = FA[type == "close distractor"]-FA[type == "far distractor"],
+            cont_entropy = mean(cont_entropy)) %>% 
+  ggplot(aes(x = diff_FA, y = cont_entropy, label = category)) +
+  geom_point()+
+  ggrepel::geom_label_repel()
+
+df_cont_entropy %>% 
+  filter(type == "close distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  ggplot(aes(x = FA, y = cont_entropy, label = category)) +
+  geom_point()+
+  ggrepel::geom_label_repel()  + 
+  ggtitle("Close distractors")
+
+df_cont_entropy %>% 
+  filter(type == "far distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  ggplot(aes(x = FA, y = cont_entropy, label = category)) +
+  geom_point()+
+  ggrepel::geom_label_repel() + 
+  ggtitle("Far distractors")
 
 ```
