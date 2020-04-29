@@ -425,7 +425,7 @@ divide_into_groups_tgt_dist <- function(dfxx) {
   
   dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
   
-  rnk <- rank(dfxx_notgt$min_tgt_dist_no0)
+  rnk <- rank(dfxx_notgt$min_tgt_dist)
   
   dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
   dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
@@ -652,26 +652,26 @@ cor.test(~ dist_to_cat_center_conv3+ dist_to_proto_conv3, df)
 df2_modelmem1 <- 
   df2_modelmem %>% 
     ungroup() %>% 
-    select(subject_id, trial_id, category_centroid_type = type, memorability_model =model_type, correct)
+    select(subject_id, trial_id, category_centroid_type = type, memorability_model =model_type, correct, category)
 
 df2_modeldisttoproto31 <- 
   df2_modeldisttoproto3  %>% 
     ungroup() %>% 
-    select(subject_id, trial_id, dist_to_proto3 =model_type, correct) 
+    select(subject_id, trial_id, dist_to_proto3 =model_type, correct, category) 
 
 df2_modeldisttoproto51 <- 
   df2_modeldisttoproto5  %>% 
     ungroup() %>% 
-    select(subject_id, trial_id, dist_to_proto5 =model_type, correct) 
+    select(subject_id, trial_id, dist_to_proto5 =model_type, correct, category) 
     
 df2_tgt_modeldist1 <- 
   df2_tgt_modeldist  %>% 
     ungroup() %>% 
-    select(subject_id, trial_id, min_dist_to_tgt =model_type, correct) 
+    select(subject_id, trial_id, min_dist_to_tgt =model_type, correct, category) 
 df_models_res <- df2_modelmem1 %>% 
-  left_join(df2_modeldisttoproto31, by = c("subject_id", "trial_id", "correct")) %>% 
-  left_join(df2_modeldisttoproto51, by = c("subject_id", "trial_id", "correct")) %>% 
-  left_join(df2_tgt_modeldist1, by = c("subject_id", "trial_id", "correct")) %>% 
+  left_join(df2_modeldisttoproto31, by = c("subject_id", "trial_id", "correct","category")) %>% 
+  left_join(df2_modeldisttoproto51, by = c("subject_id", "trial_id", "correct","category")) %>% 
+  left_join(df2_tgt_modeldist1, by = c("subject_id", "trial_id", "correct","category")) %>% 
   filter(category_centroid_type != "target")
 
 df_models_res_longer <- df_models_res %>% 
@@ -679,20 +679,26 @@ df_models_res_longer <- df_models_res %>%
   
 XXtab <- df_models_res_longer %>% 
   group_by(name,value) %>% 
-  summarize(FA = sprintf("%.2f (%.2f)", mean(1-correct),sd(1-correct)))
+  summarize(FA = sprintf("%.2f", mean(1-correct)))
 
 XXtab
 
+glmm_null_model <- df_models_res %>% glmer(correct~1+(1|subject_id) + (1|category), ., family = binomial())
 
-lm_orig_model <- df_models_res %>% lm(correct~category_centroid_type,.)
-lm_dist_to_tgt <- df_models_res %>% lm(correct~min_dist_to_tgt,.)
-lm_dist_to_proto_conv5 <- df_models_res %>% lm(correct~dist_to_proto5,.)
-lm_dist_to_proto_conv3 <- df_models_res %>% lm(correct~dist_to_proto3,.)
-lm_memorability <- df_models_res %>% lm(correct~memorability_model,.)
-models_list <- list(lm_orig_model,lm_dist_to_tgt,lm_dist_to_proto_conv5,lm_dist_to_proto_conv3,lm_memorability)
+glmm_orig_model <- df_models_res %>% glmer(correct~category_centroid_type+(1+category_centroid_type|subject_id) + (1|category), ., family = binomial())
+glmm_dist_to_tgt <- df_models_res %>% glmer(correct~min_dist_to_tgt + (1+min_dist_to_tgt|subject_id) + (1|category),., family = binomial())
+glmm_dist_to_proto_conv5 <- df_models_res %>% glmer(correct~dist_to_proto5 + (1+dist_to_proto5|subject_id) + (1|category),., family = binomial())
+glmm_dist_to_proto_conv3 <- df_models_res %>% glmer(correct~dist_to_proto3 + (1+dist_to_proto3|subject_id) + (1|category),., family = binomial())
+glmm_memorability <- df_models_res %>% glmer(correct~memorability_model + (1+memorability_model|subject_id) + (1|category),., family = binomial())
+models_list <- list(glmm_null_model,glmm_orig_model,glmm_dist_to_tgt,glmm_dist_to_proto_conv5,glmm_dist_to_proto_conv3,glmm_memorability)
 models_list %>% 
-  map(summary) %>%
-  map_dbl("r.squared") %>% 
+  map(performance::r2_nakagawa) %>%
+  map_dbl("R2_conditional") %>% 
+  round(2)
+
+models_list %>% 
+  map(performance::r2_nakagawa) %>%
+  map_dbl("R2_marginal") %>% 
   round(2)
 
 models_list %>% 
