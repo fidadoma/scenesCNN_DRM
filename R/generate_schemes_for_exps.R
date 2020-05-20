@@ -1,5 +1,14 @@
 set.seed(2005206)
 library(tidyverse)
+library(here)
+theme_set(theme_bw())
+
+plots_dir <- here("plots")
+
+if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
+
+
+source("R/utils.R")
 
 Sigma <- matrix(c(10,0,0,10),2,2)
 m <- MASS::mvrnorm(n = 67, mu=c(0,0), Sigma)
@@ -18,35 +27,30 @@ df <- df %>%
   arrange(d)
 
 
-df$type <- "NA"
+df$type <- "remaining images"
 df$type[1] <- "selected scene"
 df$type[2:9] <- "distractor"
 target_locs <- df$type[df$quintile %in% c(2,3,4)]
 
-df$type[df$quintile %in% c(2,3,4)] <- sample(c("target",rep("NA",length(target_locs)-1)))
+df$type[df$quintile %in% c(2,3,4)] <- sample(c("target",rep("remaining images",length(target_locs)-1)))
 
-
-df %>% 
-  ggplot(aes(x = x, y = y, col =type,shape = quintile)) + 
-  geom_point(size = 4) + 
+df <- df %>% mutate(type = factor(type, levels = c("selected scene","distractor","target","remaining images")))
+p <- ggplot(data = df %>% filter(type=="remaining images"),aes(x = x, y = y, col =quintile, shape = type)) + 
+  geom_point(size = 2) + 
+  geom_point(data = df %>% filter(type!="remaining images"),size = 4) + 
+  scale_shape_manual(values = c(8,16,17,15)) +
+  #scale_shape_discrete(solid = T) +
   theme(aspect.ratio = 1) + 
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-
-df %>% 
-  ggplot(aes(x = x, y = y, col =quintile, shape = type)) + 
-  geom_point(size = 4) + 
-  theme(aspect.ratio = 1) + 
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+ggsave(file.path(plots_dir, "Fig_scheme_oddone.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_scheme_oddone_noleg.svg"), p + theme(legend.position = "none"), width = 6, height = 6)
 
 
 # drm scheme --------------------------------------------------------------
@@ -93,7 +97,7 @@ df_trial <- rbind(df_targets, df_close_dist,df_far_dist)
 
 find_hull <- function(df) df[chull(df$x, df$y), ]  
 df_target_hull <- df_targets %>% find_hull()
-df %>% 
+p <- df %>% 
   ggplot(aes(x = x, y = y)) + 
   geom_point(size = 2, alpha = 0.2) +
   geom_point(data = df_trial, aes(col = type), size = 4) + 
@@ -104,6 +108,10 @@ df %>%
         axis.ticks.x=element_blank(),
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+ggsave(file.path(plots_dir, "Fig_scheme_drm.svg"), p, width = 6, height = 6)
+ggsave(file.path(plots_dir, "Fig_scheme_drm_noleg.svg"), p + theme(legend.position = "none"), width = 6, height = 6)
 
 
