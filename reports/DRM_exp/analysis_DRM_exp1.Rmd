@@ -90,7 +90,7 @@ p <- df %>%
   ylim(0,1)+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = .5) +
-  ylab("Perc. correct") +
+  ylab("Percentage correct") +
   geom_violin(trim = F)+
   stat_summary(fun.data = "mean_cl_boot") + 
   xlab("Type") +

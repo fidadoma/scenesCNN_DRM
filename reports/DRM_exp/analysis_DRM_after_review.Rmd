@@ -83,6 +83,22 @@ df <- df %>% left_join(df_participants, by = c("subject_id"))
 
 ```
 
+## Means and SD for confidence
+
+```{r}
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+df %>% 
+  mutate(confidence_n = factor(confidence, levels = c("not at all sure","somewhat sure","very sure"))) %>% 
+  group_by(type) %>% 
+  summarise(modus = Mode(confidence),
+            mean = mean(as.numeric(confidence_n)),
+            sd = sd(as.numeric(confidence_n)),
+            median = median(as.numeric(confidence_n)))
+```
+
 ## Correlation of accuracy with distance to target presentation
 
 ```{r}
@@ -453,41 +469,6 @@ df2_tgt_modeldist %>% filter(type != "target") %>%
 
 ```
 
-## Divide distractors by distance to targets - mean
-
-```{r}
-divide_into_groups_tgt_dist_mean <- function(dfxx) {
-  
-  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
-  
-  rnk <- rank(dfxx_notgt$mean_tgt_dist)
-  
-  dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
-  dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
-  
-  dfxx %>% 
-    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
-    mutate(model_type = if_else(type == "target","target",model_type))
-}
-
-df2_tgt <- df2_tgt %>% ungroup() %>% distinct()
-df2_tgt_modeldist_mean <- df2_tgt %>% 
-  filter(layer == "dist_to_tgts") %>% 
-  group_by(subject_id,grp_order) %>% 
-  do(divide_into_groups_tgt_dist_mean(.))
-
-df2_tgt_modeldist_mean %>% xtabs(~type+model_type,.) %>% prop.table(1)
-df2_tgt_modeldist_mean %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
-df2_tgt_modeldist_mean %>% filter(type != "target") %>% 
-  group_by(model_type) %>% 
-  summarize(correct = mean(correct))
-
-df2_tgt_modeldist_mean %>% filter(type != "target") %>% 
-  group_by(type) %>% 
-  summarize(correct = mean(correct))
-
-```
-
 ## Divide distractors by memorability
 
 ```{r}
@@ -690,7 +671,7 @@ glmm_dist_to_tgt <- df_models_res %>% glmer(correct~min_dist_to_tgt + (1+min_dis
 glmm_dist_to_proto_conv5 <- df_models_res %>% glmer(correct~dist_to_proto5 + (1+dist_to_proto5|subject_id) + (1|category),., family = binomial())
 glmm_dist_to_proto_conv3 <- df_models_res %>% glmer(correct~dist_to_proto3 + (1+dist_to_proto3|subject_id) + (1|category),., family = binomial())
 glmm_memorability <- df_models_res %>% glmer(correct~memorability_model + (1+memorability_model|subject_id) + (1|category),., family = binomial())
-models_list <- list(glmm_null_model,glmm_orig_model,glmm_dist_to_tgt,glmm_dist_to_proto_conv5,glmm_dist_to_proto_conv3,glmm_memorability)
+models_list <- list(glmm_null_model,glmm_orig_model,glmm_dist_to_tgt,glmm_dist_to_proto_conv3,glmm_dist_to_proto_conv5,glmm_memorability)
 models_list %>% 
   map(performance::r2_nakagawa) %>%
   map_dbl("R2_conditional") %>% 
@@ -710,10 +691,16 @@ models_list %>%
 ```{r}
 cont_entropy <- read_csv(here("data/exp_DRM1/cats_entrophy.csv"), col_names = F) %>% rename(category = X1, cont_entropy = X2) %>% mutate(category = str_replace(category, "_", " "))
 df_cont_entropy <- df %>% left_join(cont_entropy, by = "category") 
-df_cont_entropy %>% 
-  ggplot(aes(x = category, y = correct, col = type, group = type)) + 
+p <- df_cont_entropy %>% 
+  mutate(FA = 1 - correct) %>% 
+  filter(type != "target") %>% 
+  ggplot(aes(x = category, y = FA, col = type, group = type)) + 
   stat_summary(fun.data = "mean_cl_boot") + 
-  stat_summary(fun.y = "mean", geom = "line")
+  stat_summary(fun = "mean", geom = "line") + 
+  
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+ggsave(file.path(plots_dir, "Figurexx_categories_FA.svg"), p, width = 12, height = 6)
 
 df_cont_entropy %>% 
   filter(type != "target") %>% 
@@ -726,15 +713,31 @@ df_cont_entropy %>%
   geom_point()+
   ggrepel::geom_label_repel()
 
+p <- df_cont_entropy %>% 
+  filter(type == "close distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  ggplot(aes(x = cont_entropy, y = FA, label = category)) +
+  geom_point()+
+  ggrepel::geom_label_repel()  + 
+  ggtitle("Close distractors") +
+  ylab("FA") + 
+  xlab("context entropy") +
+  stat_smooth(method = "lm")
+p
 df_cont_entropy %>% 
   filter(type == "close distractor") %>% 
   group_by(category) %>% 
   summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
-  ggplot(aes(x = FA, y = cont_entropy, label = category)) +
-  geom_point()+
-  ggrepel::geom_label_repel()  + 
-  ggtitle("Close distractors")
+  cor.test(~FA+cont_entropy,., method = "sp")
 
+df_cont_entropy %>% 
+  filter(type == "far distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  cor.test(~FA+cont_entropy,., method = "sp")
+
+ggsave(file.path(plots_dir, "Figurexx_categories_close_dist_CE.svg"), p, width = 6, height = 6)
 df_cont_entropy %>% 
   filter(type == "far distractor") %>% 
   group_by(category) %>% 
@@ -745,3 +748,93 @@ df_cont_entropy %>%
   ggtitle("Far distractors")
 
 ```
+
+## FAbility
+
+```{r}
+df_dist <- df %>% filter(type != "target") %>% group_by(type, img_name) %>% 
+  summarize(FA = mean(1-correct), dist_to_cat_center_fc7 = mean(dist_to_cat_center_fc7), dist_to_proto_conv3 = mean(dist_to_proto_conv3), dist_to_proto_conv5 = mean(dist_to_proto_conv5)) %>% ungroup()
+df_dist %>% select(-type,-img_name) %>% 
+  as.matrix() %>% 
+  Hmisc::rcorr(type = "spearman")
+
+df_dist %>% ggplot(aes(x = dist_to_proto_conv3, y = FA, col =type)) + geom_point() + stat_smooth( method = "lm")
+
+df_dist %>% select(-type,-img_name) %>% 
+  as.matrix() %>% 
+  Hmisc::rcorr()
+df_dist %>% ggplot(aes(x = dist_to_proto_conv5, y = FA, col =type)) + geom_point() + stat_smooth( method = "lm")
+
+
+df2_tgt_corr <- df2_tgt %>% distinct() %>% filter(type != "target") %>% group_by(layer, type, img_name) %>% 
+  summarize(FA = mean(1-correct), dist_to_tgt = mean(min_tgt_dist_no0)) %>% ungroup()
+
+df2_tgt_corr %>% filter(layer == "dist_to_tgts") %>% 
+  select(-type,-img_name,-layer) %>% 
+  as.matrix() %>% 
+  Hmisc::rcorr(type = "sp")
+
+df2_tgt_corr %>% filter(layer == "dist_to_tgts_conv3") %>% 
+  select(-grp_order,-layer) %>% 
+  group_by(type) %>% 
+  do(cor.test(~FA+dist_to_tgt,.) %>% broom::tidy())
+  as.matrix() %>% 
+  Hmisc::rcorr(type = "sp")
+  
+
+dfm %>%  filter(type != "target") %>% group_by(type, img_name) %>% 
+  summarize(FA = mean(1-correct), mem_score = mean(mem_score))  %>% 
+  ggplot(aes(x = mem_score, y = FA, col =type)) + geom_point() + stat_smooth( method = "lm")
+
+dfm %>% filter(type != "target") %>% group_by(type, img_name) %>%
+    summarize(FA = mean(1-correct), mem_score = mean(mem_score))  %>% 
+  cor.test(~FA+mem_score,.)
+  
+```
+
+## Hits and FAs
+
+```{r}
+df_hits <- df %>% 
+    filter(type == "target") %>% 
+  group_by(category) %>% 
+  summarize(H = mean(correct))
+
+df_fas <- df %>% 
+    filter(type == "close distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct))
+df_hits %>% left_join(df_fas) %>% ggplot(aes(x = H, y = FA, label = category)) +
+  geom_point()+
+  ggrepel::geom_label_repel()
+df_hits %>% left_join(df_fas) %>% cor.test(~H+FA,., method = "sp")
+
+df_hits %>% left_join(df_fas) %>% filter(category!="badlands") %>% ggplot(aes(x = H, y = FA, label = category)) +
+  geom_point()+
+  ggrepel::geom_label_repel()
+
+df_hits <- df %>% 
+    filter(type == "target") %>% 
+  group_by(category) %>% 
+  summarize(H = mean(correct))
+
+df_fas_far <- df %>% 
+    filter(type == "far distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct))
+
+df_hFA_close <- df_hits %>% left_join(df_fas)
+df_hFA_far <- df_hits %>% left_join(df_fas_far)
+
+df_hFA_close %>% filter(category!="badlands") %>% cor.test(~H+FA,.,method ="sp")
+df_hFA_close %>% cor.test(~H+FA,.,method ="sp")
+df_hFA_far %>% cor.test(~H+FA,.,method ="sp")
+```
+
+## FAbility - with category corrections
+
+```{r}
+df
+
+```
+
