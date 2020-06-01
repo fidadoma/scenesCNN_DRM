@@ -19,7 +19,7 @@ source(here("R","utils.R"))
 # Analysis of protocols
 
 ```{r}
-prot_dir <- "data/exp_DRM1/protocols/"
+prot_dir <- here("data/exp_DRM1/protocols/")
 fs <- list.files(prot_dir, full.names = T, pattern = "*.csv") %>% str_subset("P000", negate = T)
 
 df_protocols <- fs %>%
@@ -81,7 +81,23 @@ if(!dir.exists(plots_dir)) { dir.create(plots_dir) }
 
 df <- df %>% left_join(df_participants, by = c("subject_id"))
 
+
+
+df2 <- df %>% pivot_longer(cols = starts_with("dist_to_tgts"), names_to = "layer", values_to = "distance_to_targets")
+df2_dist_tgt <- df %>% pivot_longer(cols = starts_with("avg_dist_between_tgts"), names_to = "layer", values_to = "avg_dist_between_tgts")
+
+df2 <- df2 %>% left_join(df2_dist_tgt %>% select(subject_id,trial_id), by = c("subject_id", "trial_id"))
+
+df2_tgt <- df2 %>% 
+  rowwise() %>% 
+  mutate(mean_tgt_dist = unlist(distance_to_targets) %>% mean(),
+         min_tgt_dist = unlist(distance_to_targets) %>% min(),
+         min_tgt_dist_no0 = unlist(distance_to_targets) %>% Filter(gt0,.) %>% min()) %>% 
+  distinct()
+
 ```
+
+
 
 ## Means and SD for confidence
 
@@ -109,9 +125,6 @@ df %>% left_join(df_protocols %>%
 df_dist_target_images %>% filter(type == "target", query == 1) %>% 
   summarize(m = mean(dist_to_target_image), sd = sd(dist_to_target_image))
 
-df_dist_target_images %>% 
-ggplot(aes(x = as.character(correct), y = dist_to_target_image)) + stat_summary(fun.data = "mean_cl_boot")  
-
 
 p <- df_dist_target_images %>% 
   ggplot(aes(x = dist_to_target_image, y = correct)) + stat_summary(fun.data = "mean_cl_boot") + 
@@ -119,359 +132,44 @@ p <- df_dist_target_images %>%
   xlab("Interval between presentations") + 
   ylab("Accuracy")
 p
-ggsave(file.path(plots_dir, "Figure6xx_target_distance.svg"), p, width = 6, height = 6)
-df_dist_target_images %>% 
-  filter(dist_to_target_image > 5) %>% 
-ggplot(aes(x = dist_to_target_image, y = correct)) + stat_summary(fun.data = "mean_cl_boot")  
 
-
-df_dist_target_images %>% filter(dist_to_target_image > 5) %>% cor.test(~correct+dist_to_target_image,.)
 ```
 
-## Average accuracy per image
+# Alternative models
+
+## Distance to proto - conv3
 
 ```{r}
-p <- df %>% group_by(type,img_name) %>% 
-  summarize(correct = mean(correct, na.rm = T), dist_to_proto = mean(dist_to_proto)) %>% 
-  ggplot(aes(x = dist_to_proto, y = correct, col = type)) + 
-  geom_point(alpha = 0.2) + stat_smooth(method = "lm") +
-  theme(aspect.ratio = 1) + 
-  xlab("Distance to visual prototype") + 
-  ylab("Accuracy")
-p
-ggsave(file.path(plots_dir, "FXXScatter.svg"), p, width = 6, height = 6)
 
+df2_modeldisttoproto3 <- df %>% 
+  group_by(subject_id,grp_order) %>% 
+  do(divide_into_groups(.,"dist_to_proto_conv3","close_tgt","far_tgt"))
 ```
 
-## Correlation of distance from prototype with accuracy 
-
-As we have for each test scene ditance to prototype and accuracy, we can compute correlation between those variables. I am not sure, whether we can aggregate somehow to get averaged accuracies?
-
-Neverethless, we computed correlations for all scenes, followed by correlation for each type separately. We also show one figure with correlations for each layer.
-
-```{r Correlation of distance from prototype with accuracy }
-f <- function(dfx) {
-  dfx %>% group_by(img_name) %>% summarize(correct = mean(correct), dist_to_proto = mean(dist_to_proto),dist_to_proto_conv3 = mean(dist_to_proto_conv3),
-                                           dist_to_proto_conv5 = mean(dist_to_proto_conv5))  
-}
-f2 <- function(dfx) {
-  dfx %>% group_by(type,img_name) %>% summarize(correct = mean(correct), dist_to_proto = mean(dist_to_proto),dist_to_proto_conv3 = mean(dist_to_proto_conv3),
-                                           dist_to_proto_conv5 = mean(dist_to_proto_conv5))  
-}
-
-rbind( 
-cor.test(~dist_to_proto+correct, df %>% f()) %>% broom::tidy() %>% mutate(layer="fc7", type = "all"),
-cor.test(~dist_to_proto+correct, df %>% filter(type == "far distractor") %>% f()) %>% broom::tidy() %>% mutate(layer="fc7", type = "far distractor"),
-cor.test(~dist_to_proto+correct, df %>% filter(type == "close distractor") %>% f()) %>% broom::tidy() %>% mutate(layer="fc7", type = "close distractor"),
-cor.test(~dist_to_proto+correct, df %>% filter(type == "target") %>% f()) %>% broom::tidy() %>% mutate(layer="fc7", type = "all", type = "target"),
-cor.test(~dist_to_proto_conv5+correct, df %>% f()) %>% broom::tidy() %>% mutate(layer="conv5", type = "all"),
-cor.test(~dist_to_proto_conv5+correct, df %>% filter(type == "far distractor") %>% f()) %>% broom::tidy() %>% mutate(layer="conv5", type = "far distractor"),
-cor.test(~dist_to_proto_conv5+correct, df %>% filter(type == "close distractor") %>% f()) %>% broom::tidy() %>% mutate(layer="conv5", type = "close distractor"),
-cor.test(~dist_to_proto_conv5+correct, df %>% filter(type == "target") %>% f()) %>% broom::tidy() %>% mutate(layer="conv5", type = "all", type = "target"),
-cor.test(~dist_to_proto_conv3+correct, df %>% f()) %>% broom::tidy() %>% mutate(layer="conv3", type = "all"),
-cor.test(~dist_to_proto_conv3+correct, df %>% filter(type == "far distractor") %>% f()) %>% broom::tidy() %>% mutate(layer="conv3", type = "far distractor"),
-cor.test(~dist_to_proto_conv3+correct, df %>% filter(type == "close distractor") %>% f()) %>% broom::tidy() %>% mutate(layer="conv3", type = "close distractor"),
-cor.test(~dist_to_proto_conv3+correct, df %>% filter(type == "target") %>% f()) %>% broom::tidy() %>% mutate(layer="conv3", type = "all", type = "target")) %>% 
-  select(layer, type, estimate, conf.low, conf.high, p.value) %>% 
-  knitr::kable(digits = 3, caption ="correlation between accuracy and distance to prototype")
-
-df1 <- df %>% f2() %>% pivot_longer(cols = starts_with("dist_to_proto"),names_to = "layer", values_to = "distance_to_proto")
-
-df1_gr <- df1 %>% 
-  group_by(layer, type) %>% 
-  do(cor.test(.$distance_to_proto, .$correct) %>% broom::tidy()) %>% 
-  ungroup() %>% 
-  mutate(layer = recode(layer, dist_to_proto = "fc7", dist_to_proto_conv3 = "conv3", dist_to_proto_conv5 = "conv5")) %>% 
-  mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) 
-df1_all <- df1 %>% 
-  group_by(layer) %>% 
-  do(cor.test(.$distance_to_proto, .$correct) %>% broom::tidy()) %>% 
-  ungroup() %>% 
-  mutate(layer = recode(layer, dist_to_proto = "fc7", dist_to_proto_conv3 = "conv3", dist_to_proto_conv5 = "conv5")) %>% 
-  mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) %>% 
-  mutate(type = "all")
-pd <- position_dodge(0.1, seed = 123)
-p <- df1_gr %>% 
-  arrange(type,layer) %>% 
-  ggplot(aes(x = layer, y = estimate, col = type, group = type)) + 
-  geom_point(position =  pd)+#position =  position_jitter(width = 0.1, seed = 123)) + 
-  geom_line(position =  pd)+#position = position_jitter(width = 0.1, seed = 123)) + 
-  geom_linerange(aes(ymin = conf.low, ymax = conf.high),position =  pd)+
-  ylab("correlation") +
-  ggtitle("Correlation between accuracy and distance to prototype")+
-  geom_point(data = df1_all %>% arrange(type,layer), aes(x = layer, y = estimate, group = 1), col = "black") + 
-  geom_line(data = df1_all %>% arrange(type,layer), aes(x = layer, y = estimate, group = 1), col = "black") + 
-  geom_linerange(data = df1_all %>% arrange(type,layer), aes(ymin = conf.low, ymax = conf.high), col = "black") +
-  theme(aspect.ratio = 1)
-ggsave(file.path(plots_dir, "FigureXX_layers_correlation.svg"), p, width = 6, height = 6)
-```
-
-Figure shows, that correlation is about the same for different layers with exception of far distracators, which decreases with higher layers. Black is for all data
-
-### Distances from tgt images - fc7
-
-## Average distance to target
-
-We can compute distance to targets for each test scene. From these values, we can compute average. Because each layer has different ranges, we normalize the distances by dividint them by distance to the target. Lower values than 1 means, that given scene type is closer to targets than targets themselves (e.g. their are more in center).
+## Distance to proto - conv5
 
 ```{r}
-gt0 <- function(x) {x >0}
 
-df2 <- df %>% pivot_longer(cols = starts_with("dist_to_tgts"), names_to = "layer", values_to = "distance_to_targets")
-df2_dist_tgt <- df %>% pivot_longer(cols = starts_with("avg_dist_between_tgts"), names_to = "layer", values_to = "avg_dist_between_tgts")
-
-df2 <- df2 %>% left_join(df2_dist_tgt %>% select(subject_id,trial_id), by = c("subject_id", "trial_id"))
-
-df2_tgt <- df2 %>% 
-  rowwise() %>% 
-  mutate(mean_tgt_dist = unlist(distance_to_targets) %>% mean(),
-         min_tgt_dist = unlist(distance_to_targets) %>% min(),
-         min_tgt_dist_no0 = unlist(distance_to_targets) %>% Filter(gt0,.) %>% min())
-
-df2_tgt_agg1 <- df2_tgt %>% 
-    mutate(layer = recode(layer, dist_to_tgts = "fc7", dist_to_tgts_conv3 = "conv3", dist_to_tgts_conv5 = "conv5")) %>% 
-    mutate(layer = factor(layer, levels = c("conv3", "conv5", "fc7"))) 
-
-df2_tgt_agg1 %>% 
-  ungroup() %>% 
-  filter(layer == "fc7") %>% 
-  group_by(img_name,type) %>% 
-  summarize(correct = mean(correct),  min_tgt_dist_no0 = mean(min_tgt_dist_no0)) %>% 
-  ggplot(aes(x = min_tgt_dist_no0, y = correct, col = type)) +
-  geom_point(alpha = 0.2) + stat_smooth(method = "lm") +
-  theme(aspect.ratio = 1) + 
-  xlab("Minimum distance to target (0 exlucded)") + 
-  ylab("Accuracy") 
-
-df2_tgt_agg1 %>% 
-  ungroup() %>% 
-  filter(layer == "conv5") %>% 
-  group_by(img_name,type) %>% 
-  summarize(correct = mean(correct),  min_tgt_dist_no0 = mean(min_tgt_dist_no0), dist_to_proto = mean(dist_to_proto)) %>% 
-  ggplot(aes(x = min_tgt_dist_no0, y = correct, col = type)) +
-  geom_point(alpha = 0.2) + stat_smooth(method = "lm") +
-  theme(aspect.ratio = 1) + 
-  xlab("Minimum distance to target (0 exlucded)") + 
-  ylab("Accuracy") 
-
-df2_tgt_agg1 %>% 
-  ungroup() %>% 
-  filter(layer == "fc7") %>% 
-  group_by(img_name) %>% 
-  summarize(correct = mean(correct),  min_tgt_dist_no0 = mean(min_tgt_dist_no0), dist_to_proto = mean(dist_to_proto)) %>% 
-  cor.test(~min_tgt_dist_no0+dist_to_proto,.)
-
-df2_tgt_agg1 %>% 
-  ungroup() %>% 
-  filter(layer == "fc7") %>% 
-  group_by(img_name) %>% 
-  summarize(correct = mean(correct),  min_tgt_dist_no0 = mean(min_tgt_dist_no0), dist_to_proto = mean(dist_to_proto)) %>% 
-  cor.test(~correct+dist_to_proto,.)
-df2_tgt_agg1 %>% 
-  ungroup() %>% 
-  filter(layer == "fc7") %>% 
-  group_by(img_name,type) %>% 
-  summarize(correct = mean(correct),  min_tgt_dist_no0 = mean(min_tgt_dist_no0), dist_to_proto = mean(dist_to_proto)) %>% 
-  group_by(type) %>% 
-  do(cor.test(~correct+dist_to_proto,.) %>% broom::tidy())
-
-
-p <- df2_tgt_agg1 %>% 
-    ungroup() %>% 
-    filter(layer == "fc7") %>% 
-    group_by(img_name,type) %>% 
-    summarize(correct = mean(correct),  min_tgt_dist_no0 = mean(min_tgt_dist_no0), dist_to_proto = mean(dist_to_proto)) %>%
-  ggplot(aes(x = dist_to_proto, y = min_tgt_dist_no0, col = type)) + 
-  geom_point() + 
-  theme(aspect.ratio = 1) +
-  xlab("Distance to visual prototype") + 
-  ylab("Minimum distance to target (0 exlucded)")
-p
-ggsave(file.path(plots_dir, "FigureXXDistances_right.svg"), p, width = 6, height = 6)
-
-
-
+df2_modeldisttoproto5 <- df %>% 
+  group_by(subject_id,grp_order) %>% 
+  do(divide_into_groups(.,"dist_to_proto_conv5","close_tgt","far_tgt"))
 ```
 
-## Minimum distance to target
-
-Alternativelly, we can compute minimum distance of presented scene to one of the targets. We are removing zero distances, as in case of target queries, this minimum would be 0.
-
-```{r Min distance to target}
-df2_tgt_agg2_ci <- df2_tgt_agg1 %>% 
-  group_by(layer,type) %>% 
-  summarize(m=Hmisc::smean.cl.boot(min_tgt_dist_no0)[1],lower =Hmisc::smean.cl.boot(min_tgt_dist_no0)[2], upper = Hmisc::smean.cl.boot(min_tgt_dist_no0)[3])
-
-df2_tgt_agg2_ci %>% 
-  group_by(layer) %>% 
-  mutate(m = m/m[type=="target"]) %>% 
-  ggplot(aes(x=layer, y=m,col = type, group = type)) + 
-  geom_point()+geom_line() +
-  ggtitle("Minimum distance to targets (identities excluded)")
-
-```
-
-Figure shows that types of images get closer to each other in lower layers.
-
-
-```{r select examples}
-
-set.seed(19763) 
-df_names <- df %>% filter(subject_id == 1, grp_order == 3) %>% group_by(type) %>% sample_n(5)
-
-df %>% filter(img_name %in% df_names$img_name) %>% 
-  group_by(type) %>% 
-  summarize(correct = mean(correct))
-```
-
-## Compare to category center
-
-```{r Compare to category center}
-cr <- df %>% rename(dist_to_proto_fc7 = dist_to_proto) %>% select(starts_with("dist_to_proto"),starts_with("dist_to_cat_center"), correct, img_name) %>% 
-  group_by(img_name) %>% 
-  summarize_each(mean) %>% 
-  ungroup() %>% 
-  select(-img_name) %>% 
-  as.matrix() %>% 
-  Hmisc::rcorr()
-
-cr$r
-
-cr_close <- df %>% rename(dist_to_proto_fc7 = dist_to_proto) %>% 
-  filter(type == "close distractor") %>% 
-  select(starts_with("dist_to_proto"),starts_with("dist_to_cat_center"), correct, img_name) %>% 
-  group_by(img_name) %>% 
-  summarize_each(mean) %>% 
-  ungroup() %>% 
-  select(-img_name) %>% 
-  as.matrix() %>% 
-  Hmisc::rcorr()
-
-cr_close$r %>% knitr::kable(digits = 2)
-
-cr_targets <- df %>% rename(dist_to_proto_fc7 = dist_to_proto) %>% 
-  filter(type == "target") %>% 
-  select(starts_with("dist_to_proto"),starts_with("dist_to_cat_center"), correct, img_name) %>% 
-  group_by(img_name) %>% 
-  summarize_each(mean) %>% 
-  ungroup() %>% 
-  select(-img_name) %>% 
-  as.matrix() %>% 
-  Hmisc::rcorr()
-
-cr_targets$r %>% knitr::kable(digits = 2)
-
-p <- df %>% group_by(type,img_name) %>% 
-  summarize(correct = mean(correct, na.rm = T), dist_to_cat_center_fc7 = mean(dist_to_cat_center_fc7)) %>% 
-  ggplot(aes(x = dist_to_cat_center_fc7, y = correct, col = type)) + 
-  geom_point(alpha = 0.2) + stat_smooth(method = "lm") +
-  theme(aspect.ratio = 1) + 
-  xlab("Distance to visual prototype") + 
-  ylab("Accuracy")
-p
-```
-
-## Model Distance to targets 
+## Distance to targets - fc7
 
 
 ```{r}
-df$dist_to_tgts <- purrr::map2(df$dist_to_tgts, df$avg_dist_between_tgts, ~.x/.y) # normalize distances
 
-
-
-dist_vals_targets <- df %>% 
-  filter(type == "target") %>% 
-  pull(dist_to_tgts) %>% 
-  unlist() 
-
-dist_vals_close_dist <- df %>% 
-  filter(type == "close distractor") %>% 
-  pull(dist_to_tgts) %>% 
-  unlist() 
-  
-dist_vals_far_dist <- df %>% 
-  filter(type == "far distractor") %>% 
-  pull(dist_to_tgts) %>% 
-  unlist() 
-
-df_dist_vals <- tibble(type = c(rep("target", length(dist_vals_targets)),
-                                rep("close distractor", length(dist_vals_close_dist)),
-                                rep("far distractor", length(dist_vals_far_dist))),
-                       value = c(dist_vals_targets, dist_vals_close_dist, dist_vals_far_dist)) %>% 
-  filter(value > 0)
-
-df_dist_vals %>% 
-  ggplot(aes(x = value, col = type)) + geom_freqpoly()
-
-df$model_dist_tgt_02 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.2)) # normalize distances
-df$model_dist_tgt_03 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.3)) # normalize distances
-df$model_dist_tgt_04 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.4)) # normalize distances
-df$model_dist_tgt_05 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.5)) # normalize distances
-df$model_dist_tgt_06 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.6)) # normalize distances
-df$model_dist_tgt_07 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.7)) # normalize distances
-df$model_dist_tgt_08 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.8)) # normalize distances
-df$model_dist_tgt_09 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<0.9)) # normalize distances
-df$model_dist_tgt_1 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<1)) # normalize distances
-df$model_dist_tgt_12 <- purrr::map_dbl(df$dist_to_tgts, ~any(.x<1.2)) # normalize distances
-
-
-dfx <- df %>% 
-  pivot_longer(cols = starts_with("model_dist_tgt"), names_to = "model", values_to = "accuracy") %>% 
-  mutate(accuracy = if_else(type == "target",accuracy, 1-accuracy)) 
-
-dfx %>% 
-  ggplot(aes(x = type, y = accuracy, col = model, group = model)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
-  stat_summary(fun.y = "mean", geom = "line") 
-
-dfx %>% 
-  group_by(img_name, model, type) %>% 
-  summarize(correct = mean(correct), accuracy = mean(accuracy)) %>% 
-  mutate(accuracy = jitter(accuracy)) %>% 
-  group_by(model, type) %>% 
-  do(cor.test(~accuracy+correct,.) %>% broom::tidy()) %>% 
-  filter(type == "close distractor")
-  
-```
-
-## Divide distractors by distance to targets - min no0
-
-```{r}
-divide_into_groups_tgt_dist <- function(dfxx) {
-  
-  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
-  
-  rnk <- rank(dfxx_notgt$min_tgt_dist)
-  
-  dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
-  dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
-  
-  dfxx %>% 
-    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
-    mutate(model_type = if_else(type == "target","target",model_type))
-}
-
-df2_tgt <- df2_tgt %>% ungroup() %>% distinct()
 df2_tgt_modeldist <- df2_tgt %>% 
   filter(layer == "dist_to_tgts") %>% 
   group_by(subject_id,grp_order) %>% 
-  do(divide_into_groups_tgt_dist(.))
-
-df2_tgt_modeldist %>% xtabs(~type+model_type,.) %>% prop.table(1)
-df2_tgt_modeldist %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
-df2_tgt_modeldist %>% filter(type != "target") %>% 
-  group_by(model_type) %>% 
-  summarize(correct = mean(correct))
-
-df2_tgt_modeldist %>% filter(type != "target") %>% 
-  group_by(type) %>% 
-  summarize(correct = mean(correct))
-
+  do(divide_into_groups(., "min_tgt_dist", "close_tgt", "far_tgt"))
 ```
 
-## Divide distractors by memorability
+## Memorability model
 
 ```{r}
+
 df_perimage <- df %>% group_by(img_name,type) %>% summarize(m = mean(correct), sd = sd(correct)) %>% arrange(-m)
 mem_imgnames <- read_csv(here("data/exp_DRM1/memorability/memorability_imgnames.txt"), col_names = F)
 mem_values <- read_csv(here("data/exp_DRM1/memorability/memorability_all.txt"), col_names = F)
@@ -480,137 +178,10 @@ df_mem <- tibble(img_name = mem_imgnames$X1, mem_score = mem_values$X1)
 dfm <- df %>% left_join(df_mem,by = "img_name") 
 
 
-divide_into_groups_memorability <- function(dfxx) {
-  
-  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
-  
-  rnk <- rank(dfxx_notgt$mem_score)
-  
-  dfxx_notgt$model_type[rnk <= 5] <- "low memorability"
-  dfxx_notgt$model_type[rnk > 5]  <- "high memorability"
-  
-  dfxx %>% 
-    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
-    mutate(model_type = if_else(type == "target","target",model_type))
-}
-
-
 df2_modelmem <- dfm %>% 
   group_by(subject_id,grp_order) %>% 
-  do(divide_into_groups_memorability(.))
+  do(divide_into_groups(.,"mem_score", "low_memorable","high_memorable"))
 
-df2_modelmem %>% xtabs(~type+model_type,.) %>% prop.table()
-df2_modelmem %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
-
-df2_modelmem %>% filter(type != "target") %>% 
-  group_by(model_type) %>% 
-  summarize(correct = mean(correct))
-
-
-```
-
-## Divide distractors by fc7
-
-```{r}
-
-divide_into_groups_dist_to_proto <- function(dfxx) {
-  
-  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
-  
-  rnk <- rank(dfxx_notgt$dist_to_proto)
-  
-  dfxx_notgt$model_type[rnk <= 5] <- "close_to_prototype"
-  dfxx_notgt$model_type[rnk > 5]  <- "far_to_prototype"
-  
-  dfxx %>% 
-    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
-    mutate(model_type = if_else(type == "target","target",model_type))
-}
-
-
-df2_modeldisttoproto <- df %>% 
-  group_by(subject_id,grp_order) %>% 
-  do(divide_into_groups_dist_to_proto(.))
-
-df2_modeldisttoproto %>% xtabs(~type+model_type,.)
-df2_modeldisttoproto %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
-
-df2_modeldisttoproto %>% filter(type != "target") %>% 
-  group_by(model_type) %>% 
-  summarize(correct = mean(correct))
-
-
-```
-
-## Divide distractors by conv3
-
-```{r}
-
-divide_into_groups_dist_to_proto_conv3 <- function(dfxx) {
-  
-  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
-  
-  rnk <- rank(dfxx_notgt$dist_to_proto_conv3)
-  
-  dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
-  dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
-  
-  dfxx %>% 
-    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
-    mutate(model_type = if_else(type == "target","target",model_type))
-}
-
-
-df2_modeldisttoproto3 <- df %>% 
-  group_by(subject_id,grp_order) %>% 
-  do(divide_into_groups_dist_to_proto_conv3(.))
-
-df2_modeldisttoproto3 %>% xtabs(~type+model_type,.)
-df2_modeldisttoproto3 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
-
-df2_modeldisttoproto3 %>% filter(type != "target") %>% 
-  group_by(model_type) %>% 
-  summarize(correct = mean(correct))
-
-df2_tgt_modeldist %>% filter(type != "target") %>% 
-  group_by(type) %>% 
-  summarize(correct = mean(correct))
-
-```
-
-## Divide distractors by conv5
-
-```{r}
-
-divide_into_groups_dist_to_proto_conv5 <- function(dfxx) {
-  
-  dfxx_notgt <- dfxx %>% filter(type != "target") %>% mutate(model_type = NA)
-  
-  rnk <- rank(dfxx_notgt$dist_to_proto_conv5)
-  
-  dfxx_notgt$model_type[rnk <= 5] <- "close_tgt"
-  dfxx_notgt$model_type[rnk > 5]  <- "far_tgt"
-  
-  dfxx %>% 
-    left_join(dfxx_notgt %>% select(img_name,model_type), by="img_name") %>% 
-    mutate(model_type = if_else(type == "target","target",model_type))
-}
-
-
-df2_modeldisttoproto5 <- df %>% 
-  group_by(subject_id,grp_order) %>% 
-  do(divide_into_groups_dist_to_proto_conv5(.))
-
-df2_modeldisttoproto5 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% prop.table(1)
-df2_modeldisttoproto5 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% psych::phi()
-
-df2_modeldisttoproto5 %>% filter(type != "target") %>% 
-  group_by(model_type) %>% 
-  summarize(correct = mean(correct))
-
-df2_tgt_modeldist %>% filter(type != "target") %>% 
-  group_by(type) %>% 
-  summarize(correct = mean(correct))
 
 ```
 
@@ -618,181 +189,76 @@ df2_tgt_modeldist %>% filter(type != "target") %>%
 
 ```{r}
 
-cor.test(~ dist_to_cat_center_fc7+ dist_to_cat_center_conv5, df)
-cor.test(~ dist_to_cat_center_fc7+ dist_to_cat_center_conv3, df)
+c_cat_center_conv5 <- cor.test(~dist_to_cat_center_fc7+dist_to_cat_center_conv5, df, method = "sp")
+c_cat_center_conv3 <- cor.test(~dist_to_cat_center_fc7+dist_to_cat_center_conv3, df, method = "sp")
 
-cor.test(~ dist_to_cat_center_fc7+ dist_to_proto, df)
-cor.test(~ dist_to_cat_center_conv5+ dist_to_proto_conv5, df)
-cor.test(~ dist_to_cat_center_conv3+ dist_to_proto_conv3, df)
+c_fc7 <- cor.test(~ dist_to_cat_center_fc7+ dist_to_proto, df, method = "sp")
+c_conv5 <- cor.test(~ dist_to_cat_center_conv5+ dist_to_proto_conv5, df, method = "sp")
+c_conv3 <- cor.test(~ dist_to_cat_center_conv3+ dist_to_proto_conv3, df, method = "sp")
+
+conv3_changed <- df2_modeldisttoproto3 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% prop.table(1)
+conv5_changed <- df2_modeldisttoproto5 %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% prop.table(1)
+
+tgt_changes <- df2_tgt_modeldist %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% prop.table(1)
+mem_changed <- df2_modelmem  %>% filter(type!="target") %>% xtabs(~type+model_type,.) %>% prop.table(1)
 ```
 
+The first two models aimed to explore whether the high false alarm rate was driven by high level features (original fc7 model) or by low level features. We evaluated each image in convolutional layers conv3 and conv5, which represent the scenes’ lower visual features relative to their more semantic features in fc7 (models conv3 and conv5). Consequently, the proximity in higher levels does not need to be reflected in lower levels or vice versa. For example, the distances between scenes and their corresponding category centroids differ from fc7 (conv5: Spearman $\rho$ = `r c_cat_center_conv5$estimate %>% round(2)`; conv5: Spearman $\rho$ = `r c_cat_center_conv3$estimate %>% round(2)`). However, due to the selection of experimental stimuli (choosing targets closer to category centroids), the distances between visual prototype (the center of 15 targets) and category centroids are highly correlated. This correlation is preserved in lower layers (fc7: Spearman’s $\rho$ = `r c_fc7$estimate %>% round(2)`, conv5: Spearman’s $\rho$ = `r c_conv5$estimate %>% round(2)`, conv3: Spearman’s $\rho$ = `r c_conv3$estimate %>% round(2)`). When we again divided the distractors into close and far categories, the classification of distractors changed only in `r (100*conv5_changed[1,2]) %>% round(0)`% of cases for conv5 and `r (100*conv3_changed[1,2]) %>% round(0)`% of cases for conv3.
 
-### Compare models
+An alternative participant strategy for responding in the test phase would be to compare each presented scene with one of the targets. In such a case, the false alarm rate should be higher for scenes closer to one of the targets. Therefore, for each distractor, we computed the minimum distance to one of the targets (distance-to-targets model). However, as the targets were selected based on their proximity to the category centroid, this approach yielded a similar division of distractors into close and far (only `r (100*tgt_changes[1,2]) %>% round(0)`% of distractors were classified into the opposite category).
 
-```{r}
-df2_modelmem1 <- 
-  df2_modelmem %>% 
-    ungroup() %>% 
-    select(subject_id, trial_id, category_centroid_type = type, memorability_model =model_type, correct, category)
+The final alternative model relies on estimated memorability (memorability model; Isola, Xiao, Torralba, & Oliva, 2011). We divided the scenes into lower and higher memorable scenes. Memorability is good candidate for predicting the task, because it has been demonstrated that memorable images show good perceptual organization (Goetschalckx, Moors, Vanmarcke, & Wagemans, 2018) and are quickly categorizable (Broers, Potter, & Nieuwenstein, 2018). Therefore, we evaluated the photographs using trained CNN MemNet, which can predict memorability resembling human performance (Khosla et al., 2015) . Although FIGRIM dataset contained ground-truth memorability scores for the subset of images, we decided to use estimated scores instead from MemNet instead as we needed memorability score for all images. Dividing scenes into groups with higher/lower memorability classified `r (100*mem_changed[1,1]) %>% round(0)`% close distractors as highly memorable, while for far distractors, it classified `r (100*mem_changed[2,1]) %>% round(0)`% of scenes as high memorable.
 
-df2_modeldisttoproto31 <- 
-  df2_modeldisttoproto3  %>% 
-    ungroup() %>% 
-    select(subject_id, trial_id, dist_to_proto3 =model_type, correct, category) 
+Evaluation of all the models showed similar results with weak explanatory power. For computation of the determination coefficient, we used formulas suggested by Nakagawa, Johnson, and Schielzeth (2017). This approach computed two versions of R2: conditional (model including both fixed and random effects) and marginal (including fixed effect only). Additionally, we also included a null model which has random factors only. As visualized in Table 1, the model distance to target showed the same results as the original model. Meanwhile, models relying on lower features conv5 and conv3 showed a decreasing FA rate with increasing depth. The memorability model showed the lowest fit.
 
-df2_modeldisttoproto51 <- 
-  df2_modeldisttoproto5  %>% 
-    ungroup() %>% 
-    select(subject_id, trial_id, dist_to_proto5 =model_type, correct, category) 
-    
-df2_tgt_modeldist1 <- 
-  df2_tgt_modeldist  %>% 
-    ungroup() %>% 
-    select(subject_id, trial_id, min_dist_to_tgt =model_type, correct, category) 
-df_models_res <- df2_modelmem1 %>% 
-  left_join(df2_modeldisttoproto31, by = c("subject_id", "trial_id", "correct","category")) %>% 
-  left_join(df2_modeldisttoproto51, by = c("subject_id", "trial_id", "correct","category")) %>% 
-  left_join(df2_tgt_modeldist1, by = c("subject_id", "trial_id", "correct","category")) %>% 
-  filter(category_centroid_type != "target")
 
-df_models_res_longer <- df_models_res %>% 
-  pivot_longer(cols = c(category_centroid_type, min_dist_to_tgt, dist_to_proto5, dist_to_proto3, memorability_model)) 
-  
-XXtab <- df_models_res_longer %>% 
-  group_by(name,value) %>% 
-  summarize(FA = sprintf("%.2f", mean(1-correct)))
-
-XXtab
-
-glmm_null_model <- df_models_res %>% glmer(correct~1+(1|subject_id) + (1|category), ., family = binomial())
-
-glmm_orig_model <- df_models_res %>% glmer(correct~category_centroid_type+(1+category_centroid_type|subject_id) + (1|category), ., family = binomial())
-glmm_dist_to_tgt <- df_models_res %>% glmer(correct~min_dist_to_tgt + (1+min_dist_to_tgt|subject_id) + (1|category),., family = binomial())
-glmm_dist_to_proto_conv5 <- df_models_res %>% glmer(correct~dist_to_proto5 + (1+dist_to_proto5|subject_id) + (1|category),., family = binomial())
-glmm_dist_to_proto_conv3 <- df_models_res %>% glmer(correct~dist_to_proto3 + (1+dist_to_proto3|subject_id) + (1|category),., family = binomial())
-glmm_memorability <- df_models_res %>% glmer(correct~memorability_model + (1+memorability_model|subject_id) + (1|category),., family = binomial())
-models_list <- list(glmm_null_model,glmm_orig_model,glmm_dist_to_tgt,glmm_dist_to_proto_conv3,glmm_dist_to_proto_conv5,glmm_memorability)
-models_list %>% 
-  map(performance::r2_nakagawa) %>%
-  map_dbl("R2_conditional") %>% 
-  round(2)
-
-models_list %>% 
-  map(performance::r2_nakagawa) %>%
-  map_dbl("R2_marginal") %>% 
-  round(2)
-
-models_list %>% 
-  map_dbl(AIC)
+```{r Table 1: False alarms for each of the alternative models }
+print_table1()
 ```
-
-## Context entropy
-
-```{r}
-cont_entropy <- read_csv(here("data/exp_DRM1/cats_entrophy.csv"), col_names = F) %>% rename(category = X1, cont_entropy = X2) %>% mutate(category = str_replace(category, "_", " "))
-df_cont_entropy <- df %>% left_join(cont_entropy, by = "category") 
-p <- df_cont_entropy %>% 
-  mutate(FA = 1 - correct) %>% 
-  filter(type != "target") %>% 
-  ggplot(aes(x = category, y = FA, col = type, group = type)) + 
-  stat_summary(fun.data = "mean_cl_boot") + 
-  stat_summary(fun = "mean", geom = "line") + 
-  
-  scale_x_discrete(guide = guide_axis(n.dodge=3))
-
-ggsave(file.path(plots_dir, "Figurexx_categories_FA.svg"), p, width = 12, height = 6)
-
-df_cont_entropy %>% 
-  filter(type != "target") %>% 
-  group_by(category,type) %>% 
-  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
-  group_by(category) %>% 
-  summarize(diff_FA = FA[type == "close distractor"]-FA[type == "far distractor"],
-            cont_entropy = mean(cont_entropy)) %>% 
-  ggplot(aes(x = diff_FA, y = cont_entropy, label = category)) +
-  geom_point()+
-  ggrepel::geom_label_repel()
-
-p <- df_cont_entropy %>% 
-  filter(type == "close distractor") %>% 
-  group_by(category) %>% 
-  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
-  ggplot(aes(x = cont_entropy, y = FA, label = category)) +
-  geom_point()+
-  ggrepel::geom_label_repel()  + 
-  ggtitle("Close distractors") +
-  ylab("FA") + 
-  xlab("context entropy") +
-  stat_smooth(method = "lm")
-p
-df_cont_entropy %>% 
-  filter(type == "close distractor") %>% 
-  group_by(category) %>% 
-  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
-  cor.test(~FA+cont_entropy,., method = "sp")
-
-df_cont_entropy %>% 
-  filter(type == "far distractor") %>% 
-  group_by(category) %>% 
-  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
-  cor.test(~FA+cont_entropy,., method = "sp")
-
-ggsave(file.path(plots_dir, "Figurexx_categories_close_dist_CE.svg"), p, width = 6, height = 6)
-df_cont_entropy %>% 
-  filter(type == "far distractor") %>% 
-  group_by(category) %>% 
-  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
-  ggplot(aes(x = FA, y = cont_entropy, label = category)) +
-  geom_point()+
-  ggrepel::geom_label_repel() + 
-  ggtitle("Far distractors")
-
-```
-
-## FAbility
 
 ```{r}
 df_dist <- df %>% filter(type != "target") %>% group_by(type, img_name) %>% 
   summarize(FA = mean(1-correct), dist_to_cat_center_fc7 = mean(dist_to_cat_center_fc7), dist_to_proto_conv3 = mean(dist_to_proto_conv3), dist_to_proto_conv5 = mean(dist_to_proto_conv5)) %>% ungroup()
-df_dist %>% select(-type,-img_name) %>% 
-  as.matrix() %>% 
-  Hmisc::rcorr(type = "spearman")
-
-df_dist %>% ggplot(aes(x = dist_to_proto_conv3, y = FA, col =type)) + geom_point() + stat_smooth( method = "lm")
-
-df_dist %>% select(-type,-img_name) %>% 
-  as.matrix() %>% 
-  Hmisc::rcorr()
-df_dist %>% ggplot(aes(x = dist_to_proto_conv5, y = FA, col =type)) + geom_point() + stat_smooth( method = "lm")
-
-
 df2_tgt_corr <- df2_tgt %>% distinct() %>% filter(type != "target") %>% group_by(layer, type, img_name) %>% 
   summarize(FA = mean(1-correct), dist_to_tgt = mean(min_tgt_dist_no0)) %>% ungroup()
 
-df2_tgt_corr %>% filter(layer == "dist_to_tgts") %>% 
+dist_proto <- df_dist %>% select(-type,-img_name) %>% 
+  as.matrix() %>% 
+  Hmisc::rcorr(type = "spearman")
+dist_proto <- dist_proto$r %>% as_tibble() %>% filter(FA ==1)
+
+dist_tgt <- (df2_tgt_corr %>% filter(layer == "dist_to_tgts") %>% 
   select(-type,-img_name,-layer) %>% 
   as.matrix() %>% 
-  Hmisc::rcorr(type = "sp")
+  Hmisc::rcorr(type = "sp"))$r %>% as_tibble() %>% filter(FA == 1)
 
-df2_tgt_corr %>% filter(layer == "dist_to_tgts_conv3") %>% 
-  select(-grp_order,-layer) %>% 
-  group_by(type) %>% 
-  do(cor.test(~FA+dist_to_tgt,.) %>% broom::tidy())
-  as.matrix() %>% 
-  Hmisc::rcorr(type = "sp")
-  
-
-dfm %>%  filter(type != "target") %>% group_by(type, img_name) %>% 
-  summarize(FA = mean(1-correct), mem_score = mean(mem_score))  %>% 
-  ggplot(aes(x = mem_score, y = FA, col =type)) + geom_point() + stat_smooth( method = "lm")
-
-dfm %>% filter(type != "target") %>% group_by(type, img_name) %>%
+dist_mem <- dfm %>% filter(type != "target") %>% group_by(type, img_name) %>%
     summarize(FA = mean(1-correct), mem_score = mean(mem_score))  %>% 
-  cor.test(~FA+mem_score,.)
+  cor.test(~FA+mem_score,., method = "sp")
   
 ```
 
-## Hits and FAs
+To extend our analysis beyond the qualitative division into close/far distractors, we also computed average FA rate for each distractor and correlated this FA rate with distances derived from each of the previously mentioned alternative models. All above-mentioned models showed a negative correlation between false alarms and individual metrics. In particular, for the original model, the correlation between FA and the distance to the category center was Spearman’s $\rho$ = `r dist_proto %>% pull(dist_to_cat_center_fc7) %>% round(2)`. For lower CNN layers, the correlations were smaller (conv3: $\rho$ = `r  dist_proto %>% pull(dist_to_proto_conv3) %>% round(2)`, conv5: $\rho$ = `r dist_proto %>% pull(dist_to_proto_conv5) %>% round(2)`). For the distance-to-target model, the correlation between minimum distance to target and FA was largest ($\rho$ = `r dist_tgt %>% pull(dist_to_tgt) %>% round(2)`). The memorability model showed the smallest correlation with FA ($\rho$ = `r dist_mem$estimate %>% round(2)`). These results are in line with those of previous models based on the division of distractors into two groups.
+
+```{r}
+cont_entropy <- read_csv(here("data/exp_DRM1/cats_entrophy.csv"), col_names = F) %>% rename(category = X1, cont_entropy = X2) %>% mutate(category = str_replace(category, "_", " "))
+df_cont_entropy <- df %>% left_join(cont_entropy, by = "category") 
+
+
+CE_close_dist <- df_cont_entropy %>% 
+  filter(type == "close distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  cor.test(~FA+cont_entropy,., method = "sp")
+
+CE_far_dist <- df_cont_entropy %>% 
+  filter(type == "far distractor") %>% 
+  group_by(category) %>% 
+  summarize(FA = mean(1-correct), cont_entropy = mean(cont_entropy)) %>% 
+  cor.test(~FA+cont_entropy,., method = "sp")
+
+
+```
 
 ```{r}
 df_hits <- df %>% 
@@ -804,19 +270,7 @@ df_fas <- df %>%
     filter(type == "close distractor") %>% 
   group_by(category) %>% 
   summarize(FA = mean(1-correct))
-df_hits %>% left_join(df_fas) %>% ggplot(aes(x = H, y = FA, label = category)) +
-  geom_point()+
-  ggrepel::geom_label_repel()
 df_hits %>% left_join(df_fas) %>% cor.test(~H+FA,., method = "sp")
-
-df_hits %>% left_join(df_fas) %>% filter(category!="badlands") %>% ggplot(aes(x = H, y = FA, label = category)) +
-  geom_point()+
-  ggrepel::geom_label_repel()
-
-df_hits <- df %>% 
-    filter(type == "target") %>% 
-  group_by(category) %>% 
-  summarize(H = mean(correct))
 
 df_fas_far <- df %>% 
     filter(type == "far distractor") %>% 
@@ -826,43 +280,9 @@ df_fas_far <- df %>%
 df_hFA_close <- df_hits %>% left_join(df_fas)
 df_hFA_far <- df_hits %>% left_join(df_fas_far)
 
-df_hFA_close %>% filter(category!="badlands") %>% cor.test(~H+FA,.,method ="sp")
-df_hFA_close %>% cor.test(~H+FA,.,method ="sp")
-df_hFA_far %>% cor.test(~H+FA,.,method ="sp")
+
+c_HFA_close <- df_hFA_close %>% cor.test(~H+FA,.,method ="sp")
+c_HFA_far <- df_hFA_far %>% cor.test(~H+FA,.,method ="sp")
 ```
 
-## How many scenes have ground-truth memorability score
-
-```{r}
-df_perimage <- df %>% group_by(img_name,type) %>% summarize(m = mean(correct), sd = sd(correct)) %>% arrange(-m)
-mem_imgnames <- read_csv(here("data/exp_DRM1/memorability/memorability_imgnames.txt"), col_names = F)
-mem_values <- read_csv(here("data/exp_DRM1/memorability/memorability_all.txt"), col_names = F)
-
-df_mem <- tibble(img_name = mem_imgnames$X1, mem_score = mem_values$X1)
-dfm <- df %>% left_join(df_mem,by = "img_name") 
-
-df_memorability_ground_truth <- read_csv(here("data/exp_DRM1/memorability/figrim_memorability_within_category.csv"))
-dfm <- dfm %>% left_join(df_memorability_ground_truth, by = c("img_name"="filename"))
-dfm1 <- dfm %>% 
-  group_by(type,img_name) %>% 
-  mutate( HR = hits/(hits+misses),
-          FR = false_alarms/(false_alarms+correct_rejections)) %>% 
-  summarize(hits = mean(hits), fa = mean(false_alarms),HR = mean(HR), FR = mean(FR), correct = mean(correct),mem_score = mean(mem_score)) %>% 
-  ungroup() 
-dfm1 %>% 
-  group_by(type) %>% 
-  summarize(n_perc = sum(!is.na(hits))/n(), n=sum(!is.na(hits)))
-dfm1 %>% 
-  group_by(type) %>% 
-  do(cor.test(~HR+correct,.) %>% broom::tidy())
-dfm1 %>% 
-  group_by(type) %>% 
-  mutate(correct = 1-correct) %>% 
-  do(cor.test(~FR+correct,.) %>% broom::tidy())
-
-dfm1 %>% 
-  group_by(type) %>% 
-  do(cor.test(~mem_score+FR,.) %>% broom::tidy())
-
-```
-
+Previous results showed that the explained variance of the presented models was small in comparison to the variance of subjects and categories. The differences in false alarm rates between categories are visualized in Figure 11. The variance in the FA rate was smaller for the far distractors, while the FA rate was larger for close distractors. To quantify category variability, we used context entropy as described in Bylinskii et al. (2015). This measure from the theory of information captures the variability of categories using context-dependent entropy. At the category level, this metric negatively correlated with the FA rate for close distractors (Spearman’s ρ = `r CE_close_dist$estimate %>% round(2)`), while it correlated positively with the FA rate for far distractors (Spearman’s ρ = `r CE_far_dist$estimate %>% round(2)`). A similar pattern was observed for correlation between recognition accuracy (for targets) and FA rate (close distractors: ρ = `r c_HFA_close$estimate %>% round(2)`, far distractors: ρ = `r c_HFA_far$estimate %>% round(2)`). In other words, in more homogenous categories, people are likely to confuse close distractors with targets (higher FA). However, it is easier for them to identify correctly far distractors as distractors (lower FA). In more variable categories, both effects are smaller: close distractors differ more from the targets, and far distractors are not so different from prototypical stimuli. 

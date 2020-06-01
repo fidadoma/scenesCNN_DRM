@@ -31,7 +31,7 @@ load(here("data","konkle_180621.RData"))
 df <- readRDS(here("data","oddoneout","results_190531.rds"))
 
 metrics <- readRDS(file = here("data", "oddoneout", "metrics_200317.rds"))
-metrics_wide <- readRDS(file = here("data", "oddoneout", "metrics_wide_200317.rds"))
+
 wrong_trials <- df %>% select(prot_id_version,trial_id,im1:im9) %>% group_by(prot_id_version,trial_id) %>% gather("key", "value",im1:im9) %>% summarize(n = length(unique(value))) %>% filter(n<9) %>% select(-n)
 
 
@@ -61,11 +61,7 @@ participants %>%
   knitr::kable(digits = 2)
 ```
 
-# Correlation of metrics
 
-```{r}
-df_metrics %>% select(ssim, hog, gist, sift_sum,pdistRGB) %>%  cor()
-```
 
 # Duration of the exp
 
@@ -282,7 +278,7 @@ p <- p0 + geom_point(data=predframe,colour="red")+
   ylim(0,1)+
   theme(aspect.ratio = 1) +
   geom_hline(yintercept = 1/9) +
-  xlab("Distance ratio") + s
+  xlab("Distance ratio") +
 ylab("Perc. correct") +
   theme(text = element_text(size = 24)) 
 
